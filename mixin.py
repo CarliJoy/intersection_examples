@@ -1,6 +1,7 @@
 from typing import Protocol, Self
 #from type_intersections import Intersection
 from typing_protocol_intersection import ProtocolIntersection
+
 class User:
     @property
     def is_authenticated(self) -> bool:
@@ -32,7 +33,7 @@ class LoginRequiredMixin:
     def valid_user(self, user: str) -> bool:
         return user.startswith("Example")
 
-    def dispatch(self, request: ProtocolIntersection[ViewProtocol, MixinProtocol]):
+    def dispatch(self: View & "LoginRequiredMixin", request: Request):
         if not request.user.is_authenticated or not self.valid_user(request.user.name):
             raise RuntimeError("Not allowed")
         return super().dispatch(request)
