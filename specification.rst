@@ -102,4 +102,8 @@ Similarly to union types (see PEP-604), the new syntax should be valid to use in
     # Invalid
     issubclass(list[C], list[A] & list[B])
 
-However the above only applies to concrete types, not Protocols. The `isinsnstance` or `issubclass` check of anfor aIntersection offor concreteconrecete classes/objects is equivalent to to the and combined `isinstance`ance check of all Intersection elements sinstance check  check, that all typestoeIn.
+However the above only applies to concrete types, not Protocols.
+The `isinsnstance` or `issubclass` check for an Intersection is equal to the and combined checks of all arguments::
+
+    assert isinstance(val, A & B) == isinstance(val, A) and isinstance(val, B)
+    assert issubclass(val, A & B) == issubclass(val, A) and issubclass(val, B)
