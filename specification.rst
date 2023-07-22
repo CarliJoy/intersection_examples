@@ -102,8 +102,53 @@ Similarly to union types (see PEP-604), the new syntax should be valid to use in
     # Invalid
     issubclass(list[C], list[A] & list[B])
 
-However the above only applies to concrete types, not Protocols.
-The `isinsnstance` or `issubclass` check for an Intersection is equal to the and combined checks of all arguments::
+The `isinstance` or `issubclass` check for an Intersection is equal to the combined checks of all arguments passed:
+
+:: 
 
     assert isinstance(val, A & B) == isinstance(val, A) and isinstance(val, B)
     assert issubclass(val, A & B) == issubclass(val, A) and issubclass(val, B)
+
+However the above only applies to concrete types, not Protocols. When performing an `isinstance` or `issubclass` check 
+for an Intersection of protocol types, `isinstance` and `issubclass` checks for equivalence to the union of all attributes and
+methods of the object passed in.
+
+::
+
+  from typing import Protocol, overload
+
+
+  class ProtoOne(Protocol):
+    a: int
+    c: Exception
+
+    def foo(self, x: int) -> bool:
+      ...
+
+  class ProtoTwo(Protocol):
+    a: str
+    b: float
+
+    def foo(self, x: str) -> str:
+      ...
+
+  class IntersectionOneTwo(Protocol):
+    a: str | int
+    b: float 
+    c: Exception
+
+    @overload
+    def foo(self, x: int) -> bool:
+      ...
+
+    @overload
+    def foo(self, x: str) -> str:
+      ...
+
+    assert isinstance(val, ProtoOne & ProtoTwo) == isinstance(val, IntersectionOneTwo)
+    assert issubclass(val, ProtoOne & ProtoTwo) == issubclass(val, IntersectionOneTwo)
+
+The reason for the difference in behaviour between concrete and protocol types here is the following. 
+The logic for checking concrete types works by checking that the method resolution order of all objects 
+passed are equivalent. However, this is not possible to do for protocols. Consequently, it is necessary
+to check that the combined behaviour of objects' attributes and methods.
