@@ -104,12 +104,12 @@ Similarly to union types (see PEP-604), the new syntax should be valid to use in
 
 The `isinstance` or `issubclass` check for an Intersection is equal to the combined checks of all arguments passed:
 
-:: 
+::
 
     assert isinstance(val, A & B) == isinstance(val, A) and isinstance(val, B)
     assert issubclass(val, A & B) == issubclass(val, A) and issubclass(val, B)
 
-However the above only applies to concrete types, not Protocols. When performing an `isinstance` or `issubclass` check 
+However the above only applies to concrete types, not Protocols. When performing an `isinstance` or `issubclass` check
 for an Intersection of protocol types, `isinstance` and `issubclass` checks for equivalence to the union of all attributes and
 methods of the object passed in.
 
@@ -134,7 +134,7 @@ methods of the object passed in.
 
   class IntersectionOneTwo(Protocol):
     a: str | int
-    b: float 
+    b: float
     c: Exception
 
     @overload
@@ -148,7 +148,7 @@ methods of the object passed in.
     assert isinstance(val, ProtoOne & ProtoTwo) == isinstance(val, IntersectionOneTwo)
     assert issubclass(val, ProtoOne & ProtoTwo) == issubclass(val, IntersectionOneTwo)
 
-The reason for the difference in behaviour between concrete and protocol types here is the following. 
-The logic for checking concrete types works by checking that the method resolution order of all objects 
+The reason for the difference in behaviour between concrete and protocol types here is the following.
+The logic for checking concrete types works by checking that the method resolution order of all objects
 passed are equivalent. However, this is not possible to do for protocols. Consequently, it is necessary
 to check that the combined behaviour of objects' attributes and methods.
