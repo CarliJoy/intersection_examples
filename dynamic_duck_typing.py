@@ -18,7 +18,7 @@ def add_function(obj: T) -> Intersection[T, EnhancedClass]:
         return f"{self} ({bar})"
 
     new = cast(Intersection[T, EnhancedClass], obj)
-    new.foobar = foobar
+    new.foobar = foobar  # type: ignore[attr-defined]
     return new
 
 
