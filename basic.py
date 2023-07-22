@@ -3,10 +3,10 @@ from typing import Protocol, runtime_checkable, overload, reveal_type
 from basedtyping import Intersection
 
 
-class A:
+class A(str):
     a: str
 
-class B:
+class B(float):
     b: str
 
 

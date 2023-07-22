@@ -33,7 +33,8 @@ XEnhanched = add_function(X(bar="foo"))
 reveal_type(XEnhanched)
 reveal_type(XEnhanched.bar)
 reveal_type(XEnhanched.foobar)
-
+reveal_type(add_function(None))
+add_function(None).foobar(2)
 class YEnhanced:
     bar: str
     def foobar(self, bar: Intersection[T, EnhancedClass]) -> str:
