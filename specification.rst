@@ -52,6 +52,24 @@ As `PEP 483`_ already suggested: ``Any`` shall be removed from an ``Intersection
 ``Never`` Evaluation
 --------------------
 An Intersection that contains either two classes that are a or are a subclass of two different `internal base classes <https://docs.python.org/3/library/stdtypes.html>`_ shall evaluate to ``Never``.
+Examples for internal baseclasses are:
+
+- BaseException
+- bool
+- bytearray
+- bytes
+- complex
+- dict
+- float
+- frozenset
+- int
+- list
+- memoryview
+- range
+- set
+- str
+- tuple
+- type
 
 There are concrete types that can't be subclassed, they are
  - a class marked with ``typing.final`` `[doc] <https://docs.python.org/3/library/typing.html#typing.final>`_
@@ -62,6 +80,7 @@ There are concrete types that can't be subclassed, they are
 
 The reasoning behind this is that these types can't be subtyped and shouldn't be
 dynamically extended.
+Doing this early prevents issues during subtyping or assignments checks.
 
 ::
 
@@ -180,28 +199,12 @@ Please note for ``@overload`` the sub file rules apply as described in `PEP 484 
 Assignability
 -------------
 
-Type checks don’t error on type assignment but they do error when you try to assign a value to the
-variable that was just annotated.
+A type checker validating that a variable can be assigned to an Intersection the following should be done:
 
-::
+ - check that the variable ``issubclass()`` of all concrete classes
+ - ensure that the ``Merged`` protocol (see above) fits to the given variable
 
-    # This is invalid since str and float don't intersect
-    # but the error doesn't show on Intersection
-    x: str & float
-    # rather it only shows here when you try to actually assign a variable to x
-    x = 3
-
-    # same here - this doesn't fail here
-    def foo(x: str & float):
-        ...
-
-    # but does fail here
-    foo(3)
-
-# TODO continue here
-
-
-The instance check of an intersection between concrete types is determined by their method resolution order. For instance:
+The differentiation between concrete types (nominal typing) and protocols (structural typing) is inherent the current Python type system and shall not be changed.
 
 ::
 
@@ -223,11 +226,17 @@ The instance check of an intersection between concrete types is determined by th
     # invalid since the subtype B is missing
     x: Intersection[A, B] = A()
 
-However, this does not hold for protocols or generics.
 
 Subtyping
 ---------
-As it is not possible to create subtypes of Unions, it is also not possible to create subtypes of Intersections.e
+As it is not possible to create subtypes of Unions, it is also not possible to create subtypes of Intersections.
+
+Still a type checker needs to be able to create a virtual type internally when ``A && B`` is used.
+As it doesn't know anything about potential MRO of concrete classes (remember the order of an ``Intersection`` does not matter), we need a different way of creating types for attributes.
+To do so, the type checker shall apply the algorithm described in Protocol Reduction not only to protocols but to all types given.
+The resulting ``Merged`` protocol shall be used internally by the type checker as representation of the the given ``Intersection`` type for all further checks.
+
+% TODO maybe ``reveal_type`` could accepts a keyword argument, verbose that prints this protocol?
 
 
 
