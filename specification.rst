@@ -20,8 +20,14 @@ Furthermore python is a dynamically language with a gradual typing and language 
 This could create a lot of ambiguities therefore the following rules are defined for the intersection type.
 Some of this rules were already defined `PEP 483`_ and were discussed in the further development of this PEP.
 
-Order
------
+Syntax
+------
+
+An intersection of types `A` and `B` could either be defined via `Intersection[A, B]` or using the `&` operator as `A & B`.
+
+
+Order and Emptiness
+-------------------
 As for Unions the Order of elements of a Intersection does not matter.
 
 Basic Reductions
@@ -31,6 +37,7 @@ In order for the following rules to work correctly the following reduction have 
 - Nested Intersection shall be flattened, i.e ``Intersection[A, Intersection[B, C]] == Intersection[A, B, C]``
 - If a (concrete or protocol) type ``A`` is a subtype of ``B``, ``A`` shall be removed from the Intersection
 - If a protocol ``BP`` defines **all** methods and properties of a protocol ``AP``, ``AP`` shall be removed from the Intersection
+- If the concrete class ``A`` fulfils the Protocol ``AP``, ``AP`` shall be removed from the Intersection
 - An Intersection with only one element shall be normalized to the element.
 
 
@@ -90,34 +97,109 @@ dynamically extended.
     reveal_type(enhance(str)) # okay
     reveal_type(enhance(None)) # raises a TypeError
 
+Handling Callables
+------------------
+Every Callable within an intersection shall be treated like a ``def __call__()`` Protocol.
+
+::
+
+    from typing import Protocol, Callable
+
+    MyCallable = Callable[[str, int], float]
+
+    class CallProto:
+        def __call__(a: str, b: int) -> float: ...
+
+    # Type Checker should perform the following conversation
+    # Intersection[T, MyCallable] => Intersection[T, CallProto]
+
+This way the ``overload`` mechanism described below can be used.
+
+
+Protocol Reduction
+------------------
+
+A type checker shall combine all protocols of an intersection in the following way:
+
+% TODO: Shall this be valid also for ABC?
+
+- Create a new empty protocol ``Merged``
+- Cycle over all protocols and their attributes.
+
+  - For each of such attributes do:
+
+    - If: the given attribute does not exist, copy it to ``Merged``
+    - Else If: the given already exist in ``Merged`` and is a callable (function/method), mark the attribute ``@overloaded`` (if not done already) and add current attribute as ``@overloaded`` as well
+    - Else:
+
+      - If: The attribute in ``Merged`` is a (or multiple) callable(s), convert them to **one** ``__call__`` protocol (if multiple callables, with overloads)
+      - If: The attribute in ``Merged`` is no union make it one
+      - If: Uhe given attribute is a callable and there is already a call protocol in the Union, add the given attribute as overload
+      - Else: Add the given attribute to the union
+
+
+
+Please note for ``@overload`` the sub file rules apply as described in `PEP 484 <https://peps.python.org/pep-0484/#function-method-overloading>`_
+
+::
+
+  from typing import Protocol, overload
+
+
+  class ProtoOne(Protocol):
+    a: int
+    c: Exception
+
+    def foo(self, x: int) -> bool:
+      ...
+
+  class ProtoTwo(Protocol):
+    a: str
+    b: float
+
+    def foo(self, x: str) -> str:
+      ...
+
+  class IntersectionOneTwo(Protocol):
+    a: str | int
+    b: float
+    c: Exception
+
+    @overload
+    def foo(self, x: int) -> bool:
+      ...
+
+    @overload
+    def foo(self, x: str) -> str:
+      ...
+
+    assert isinstance(val, ProtoOne & ProtoTwo) == isinstance(val, IntersectionOneTwo)
+    assert issubclass(val, ProtoOne & ProtoTwo) == issubclass(val, IntersectionOneTwo)
+
+
+Assignability
+-------------
+
+Type checks don’t error on type assignment but they do error when you try to assign a value to the
+variable that was just annotated.
+
+::
+
+    # This is invalid since str and float don't intersect
+    # but the error doesn't show on Intersection
+    x: str & float
+    # rather it only shows here when you try to actually assign a variable to x
+    x = 3
+
+    # same here - this doesn't fail here
+    def foo(x: str & float):
+        ...
+
+    # but does fail here
+    foo(3)
+
 # TODO continue here
-Old:....
 
-The specific rules for intersections have been already defined in `PEP 483 <https://peps.python.org/pep-0483/#fundamental-building-blocks>`_  they are repeated here:
-
-* The order of the arguments doesn't matter. Nested intersections are flattened, e.g. ``Intersection[int, Intersection[float, str]] == Intersection[int, float, str]``.
-* An intersection of fewer types is a supertype of an intersection of
-  more types, e.g. ``Intersection[int, str]`` is a supertype
-  of ``Intersection[int, float, str]``.
-* An intersection of one argument is just that argument,
-  e.g. ``Intersection[int]`` is ``int``.
-* When argument have a subtype relationship, the more specific type
-  survives, e.g. ``Intersection[str, Employee, Manager]`` is
-  ``Intersection[str, Manager]``.
-*  ``Intersection[]`` is illegal, so is ``Intersection[()]``.
-* Corollary: ``Any`` disappears from the argument list, e.g.
-  ``Intersection[int, str, Any] == Intersection[int, str]``.
-  ``Intersection[Any, object]`` is ``object``.
-* The interaction between ``Intersection`` and ``Union`` is complex but
-  should be no surprise if you understand the interaction between
-  intersections and unions of regular sets (note that sets of types can be
-  infinite in size, since there is no limit on the number
-  of new subclasses).
-
-Syntax
-------
-
-An intersection of types `A` and `B` could either be defined via `Intersection[A, B]` or using the `&` operator as `A & B`.
 
 The instance check of an intersection between concrete types is determined by their method resolution order. For instance:
 
@@ -147,26 +229,7 @@ Subtyping
 ---------
 As it is not possible to create subtypes of Unions, it is also not possible to create subtypes of Intersections.e
 
-Assignability
--------------
 
-Type checks don’t error on type assignment but they do error when you try to assign a value to the
-variable that was just annotated.
-
-::
-
-    # This is invalid since str and float don't intersect
-    # but the error doesn't show on Intersection
-    x: str & float
-    # rather it only shows here when you try to actually assign a variable to x
-    x = 3
-
-    # same here - this doesn't fail here
-    def foo(x: str & float):
-        ...
-
-    # but does fail here
-    foo(3)
 
 
 TODO: Structural type of Intersection[A, B]?
@@ -204,40 +267,7 @@ However the above only applies to concrete types, not Protocols. When performing
 for an Intersection of protocol types, `isinstance` and `issubclass` checks for equivalence to the union of all attributes and
 methods of the object passed in.
 
-::
 
-  from typing import Protocol, overload
-
-
-  class ProtoOne(Protocol):
-    a: int
-    c: Exception
-
-    def foo(self, x: int) -> bool:
-      ...
-
-  class ProtoTwo(Protocol):
-    a: str
-    b: float
-
-    def foo(self, x: str) -> str:
-      ...
-
-  class IntersectionOneTwo(Protocol):
-    a: str | int
-    b: float
-    c: Exception
-
-    @overload
-    def foo(self, x: int) -> bool:
-      ...
-
-    @overload
-    def foo(self, x: str) -> str:
-      ...
-
-    assert isinstance(val, ProtoOne & ProtoTwo) == isinstance(val, IntersectionOneTwo)
-    assert issubclass(val, ProtoOne & ProtoTwo) == issubclass(val, IntersectionOneTwo)
 
 The reason for the difference in behaviour between concrete and protocol types here is the following.
 The logic for checking concrete types works by checking that the method resolution order of all objects
