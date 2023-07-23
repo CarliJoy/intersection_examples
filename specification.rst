@@ -41,14 +41,14 @@ The instance check of an intersection between concrete types is determined by th
     class B:
         ...
 
-    class C(B):
+    class C(A, B):
         ...
 
-    # valid since mro of A and B is the same
-    x: Intersection[A, B] = A()
+    # valid since C is a subtype of all intersected types
+    x: Intersection[A, B] = C()
 
-    # invalid since mro of A and C is different
-    x: Intersection[A, C] = A()
+    # invalid since the subtype B is missing
+    x: Intersection[A, B] = A()
 
 However, this does not hold for protocols or generics.
 
