@@ -52,19 +52,43 @@ There are concrete types that can't be subclassed, they are
  - ``None``
 
 
-Also every Intersection that contains any final type, i.e. a class marked with ``typing.final`` or ``typing.Never`` or ``typing.NoReturn`` shall evaluate to ``typing.Never``.
 
-As ``None`` is a special internal base types that can't be subclassed, so any Intersection with ``None`` besides a simple Protocols like ``__bool__`` that ``None`` fulfils, will always evaluate to ``Never``.
+The reasoning behind this is that these types can't be subtyped and shouldn't be
+dynamically extended.
 
-The reasoning behind this is the following:
-..
-    class Enriched(Protocol):
-        is_enriched: bool
+::
 
-    def enrich(var: T1) -> T1&str&Enriched:
-        class new(T1, str)
-            is_enriched
+    from typing import TypeVar, reveal_type, Intersection
+        from typing import TypeVar, reveal_type, Intersection
 
+    T = TypeVar("T")
+
+    class Enhanced:
+        is_great: bool
+
+
+    def enhance(cls: type[T]) -> type[Intersection[T, Enhanced]]:
+        class New(cls, Enhanced):
+            ...
+
+        return New
+
+    reveal_type(enhance(str))  # okay
+    reveal_type(enhance(None))  # raises a TypeError
+    T = TypeVar("T")
+
+    class Enhanced:
+        is_great: bool
+
+
+    def enhance(cls: type[T]) -> type[Intersection[T, Enhanced]]:
+        class New(cls, Enhanced):
+            ...
+
+        return New
+
+    reveal_type(enhance(str)) # okay
+    reveal_type(enhance(None)) # raises a TypeError
 
 # TODO continue here
 Old:....
