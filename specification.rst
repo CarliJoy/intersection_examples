@@ -18,7 +18,7 @@ In contrary in order for `Target` to by a valid (sub)type of ``Intersection[T1, 
 Python type system know concrete types as well as types defining interfaces (protocols).
 Furthermore python is a dynamically language with a gradual typing and language base types that behave different from normal classes.
 This could create a lot of ambiguities therefore the following rules are defined for the intersection type.
-Some of this rules were already defined `PEP 483 <https://peps.python.org/pep-0483/#fundamental-building-blocks>`_ and were discussed in the further development of this PEP.
+Some of this rules were already defined `PEP 483`_ and were discussed in the further development of this PEP.
 
 Order
 -----
@@ -33,13 +33,37 @@ In order for the following rules to work correctly the following reduction have 
 - If a protocol ``BP`` defines **all** methods and properties of a protocol ``AP``, ``AP`` shall be removed from the Intersection
 - An Intersection with only one element shall be normalized to the element.
 
+
+``Any`` Reduction
+-----------------
+As `PEP 483`_ already suggested: ``Any`` shall be removed from an ``Intersection``, i.e. ``Intersection[A, B, Any] == Intersection[A, B]``.
+
+% This is only a suggestion and needs to be discussed and decided in https://github.com/CarliJoy/intersection_examples/issues/1
+% Once it was finally decided the discussion and arguments should be summarized here.
+
+
 ``Never`` Evaluation
 --------------------
 An Intersection that contains either two classes that are a or are a subclass of two different `internal base classes <https://docs.python.org/3/library/stdtypes.html>`_ shall evaluate to ``Never``.
-Also every Intersection that contains any final type like ``Never`` or ``NoReturn`` shall evaluate to ``Never``.
+
+There are concrete types that can't be subclassed, they are
+ - a class marked with ``typing.final`` `[doc] <https://docs.python.org/3/library/typing.html#typing.final>`_
+ - ``typing.Never`` and ``typing.NoReturn`` also called `bottom type <https://en.wikipedia.org/wiki/Bottom_type>`_
+ - ``None``
+
+
+Also every Intersection that contains any final type, i.e. a class marked with ``typing.final`` or ``typing.Never`` or ``typing.NoReturn`` shall evaluate to ``typing.Never``.
 
 As ``None`` is a special internal base types that can't be subclassed, so any Intersection with ``None`` besides a simple Protocols like ``__bool__`` that ``None`` fulfils, will always evaluate to ``Never``.
 
+The reasoning behind this is the following:
+..
+    class Enriched(Protocol):
+        is_enriched: bool
+
+    def enrich(var: T1) -> T1&str&Enriched:
+        class new(T1, str)
+            is_enriched
 
 
 # TODO continue here
@@ -198,3 +222,5 @@ to check that the combined behaviour of objects' attributes and methods.
 
 .. [WIKI1] https://en.wikipedia.org/wiki/Intersection_type
 .. [WIKI2] https://en.wikipedia.org/wiki/Intersection_type_discipline
+
+.. _PEP 483: https://peps.python.org/pep-0483/#fundamental-building-blocks
