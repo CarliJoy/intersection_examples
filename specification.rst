@@ -1,8 +1,51 @@
+**⚠️ NOTE: This is document is currently edited until this line is removed!**
+
 Specification
 =============
 
-[Describe the syntax and semantics of any new language feature.]
-Some basic rules forrulesThe specific rules for intersections have been already defined in `PEP 483 <https://peps.python.org/pep-0483/#fundamental-building-blocks>`_  they are repeated here:
+Theoretical Definition
+----------------------
+In type theory, an intersection type can be allocated to values that can be assigned both the type σ and the type τ.
+This value can be given the intersection type σ ∩ τ in an intersection type system [WIKI1]_.
+This means by using an intersection type constructor ( ∩ ) it is possible to assign multiple types to a single term.
+In particular, if a term M can be assigned both the type σ and the type τ, then M be assigned the intersection type σ ∩ τ (and vice versa) [WIKI2]_.
+
+In other words specific to Python:
+``Intersection`` is a typing composition operator similar like `Union`.
+In order for ``Target`` to be a valid (sub)type of ``Union[T1, T2, Tn]``, ``Target`` must by a (sub)type of **any** ``Tn``.
+In contrary in order for `Target` to by a valid (sub)type of ``Intersection[T1, T2, Tn]``, ``Target`` must by a (sub)type of **all** ``Tn``.
+
+Python type system know concrete types as well as types defining interfaces (protocols).
+Furthermore python is a dynamically language with a gradual typing and language base types that behave different from normal classes.
+This could create a lot of ambiguities therefore the following rules are defined for the intersection type.
+Some of this rules were already defined `PEP 483 <https://peps.python.org/pep-0483/#fundamental-building-blocks>`_ and were discussed in the further development of this PEP.
+
+Order
+-----
+As for Unions the Order of elements of a Intersection does not matter.
+
+Basic Reductions
+----------------
+In order for the following rules to work correctly the following reduction have to be applied to Intersections first:
+
+- Nested Intersection shall be flattened, i.e ``Intersection[A, Intersection[B, C]] == Intersection[A, B, C]``
+- If a (concrete or protocol) type ``A`` is a subtype of ``B``, ``A`` shall be removed from the Intersection
+- If a protocol ``BP`` defines **all** methods and properties of a protocol ``AP``, ``AP`` shall be removed from the Intersection
+- An Intersection with only one element shall be normalized to the element.
+
+``Never`` Evaluation
+--------------------
+An Intersection that contains either two classes that are a or are a subclass of two different `internal base classes <https://docs.python.org/3/library/stdtypes.html>`_ shall evaluate to ``Never``.
+Also every Intersection that contains any final type like ``Never`` or ``NoReturn`` shall evaluate to ``Never``.
+
+As ``None`` is a special internal base types that can't be subclassed, so any Intersection with ``None`` besides a simple Protocols like ``__bool__`` that ``None`` fulfils, will always evaluate to ``Never``.
+
+
+
+# TODO continue here
+Old:....
+
+The specific rules for intersections have been already defined in `PEP 483 <https://peps.python.org/pep-0483/#fundamental-building-blocks>`_  they are repeated here:
 
 * The order of the arguments doesn't matter. Nested intersections are flattened, e.g. ``Intersection[int, Intersection[float, str]] == Intersection[int, float, str]``.
 * An intersection of fewer types is a supertype of an intersection of
@@ -152,3 +195,6 @@ The reason for the difference in behaviour between concrete and protocol types h
 The logic for checking concrete types works by checking that the method resolution order of all objects
 passed are equivalent. However, this is not possible to do for protocols. Consequently, it is necessary
 to check that the combined behaviour of objects' attributes and methods.
+
+.. [WIKI1] https://en.wikipedia.org/wiki/Intersection_type
+.. [WIKI2] https://en.wikipedia.org/wiki/Intersection_type_discipline
