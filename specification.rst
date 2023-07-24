@@ -1,4 +1,4 @@
-**⚠️ NOTE: This is document is currently edited until this line is removed!**
+**⚠️ NOTE: This is document is work in progress, help wanted, see https://github.com/CarliJoy/intersection_examples/blob/main/README.md**
 
 Specification
 =============
