@@ -224,6 +224,36 @@ Please note for ``@overload`` the sub file rules apply as described in `PEP 484 
     assert isinstance(val, ProtoOne & ProtoTwo) == isinstance(val, IntersectionOneTwo)
     assert issubclass(val, ProtoOne & ProtoTwo) == issubclass(val, IntersectionOneTwo)
 
+TypedDicts
+----------
+
+If multiple TypedDicts are given within an Intersection, their attributes shall be handled as described with ``Protocol`` attributes.
+
+::
+
+    import typing
+    from basedtyping import Intersection
+
+
+    class A(typing.TypedDict):
+        a: int
+        common: str
+
+
+    class B(typing.TypedDict):
+        b: float
+        common: bytes
+
+
+    class Intersected(typing.TypedDict):
+        a: int
+        b: float
+        common: str | bytes
+
+
+    def is_equal(var: Intersection[A, B]) -> Intersected:  # The two representations are equal
+        return var  # no type error
+
 
 Assignability
 -------------
