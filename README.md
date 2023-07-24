@@ -1,7 +1,10 @@
 # intersection_examples
-Python Typing Intersection examples
+Python Typing Intersection examples and an [initial specification](./specification.rst) intended to be used within a later PEP.
 
-The intersection were proposed defined:
-- https://peps.python.org/pep-0483/
+The issues in this repo shall streamline the original https://github.com/python/typing/issues/213 issue.
 
-Some things were defined there already
+Please open an issue (if not already existing), if you find any issues with the specification.
+
+For short exchange and discussion you can use [this Discord server](https://discord.gg/wDWAbXatWt).
+
+If you want to contribute to this repo [write into this issue](https://github.com/CarliJoy/intersection_examples/issues/4).
