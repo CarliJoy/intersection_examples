@@ -30,9 +30,38 @@ Order and Emptiness
 -------------------
 As for Unions the Order of elements of a Intersection does not matter.
 
+
+`isinstance` and `issubclass`
+-----------------------------
+
+Similarly to union types (see PEP-604), the new syntax should be valid to use in ``isinstance`` and ``issubclass`` calls, as long as the intersected types are valid arguments to ``isinstance`` and ``issubclass``.
+
+The `isinstance` or `issubclass` check for an Intersection is equal to the combined checks of all arguments passed:
+
+::
+
+    class A: ...
+    class B: ...
+
+    assert isinstance(val, A & B) == isinstance(val, A) and isinstance(val, B)
+    assert issubclass(val, A & B) == issubclass(val, A) and issubclass(val, B)
+
+
+It shall be noted, that following the `PEP 544 <https://peps.python.org/pep-0544/#support-isinstance-checks-by-default>`_ about the rejected default ``isinstance`` check:
+If any Protocol within the ``Intersection`` isn't marked with ``typing.runtime_checkable``, ``isinstance`` will raise a TypeError.
+
+
+So one possibility to fulfil an Intersection is for a class to be a child of all intersected classes.
+
+::
+    class C(A, B): ...
+
+    isinstance(C(), A & B)  # True
+    issubclass(C, A & B)  # True
+
 Basic Reductions
 ----------------
-In order for the following rules to work correctly the following reduction have to be applied to Intersections first:
+In order for the following rules intended for type checkers to work correctly the following reduction have to be applied to Intersections first:
 
 - Nested Intersection shall be flattened, i.e ``Intersection[A, Intersection[B, C]] == Intersection[A, B, C]``
 - If a (concrete or protocol) type ``A`` is a subtype of ``B``, ``A`` shall be removed from the Intersection
@@ -76,7 +105,7 @@ There are concrete types that can't be subclassed, they are
  - ``typing.Never`` and ``typing.NoReturn`` also called `bottom type <https://en.wikipedia.org/wiki/Bottom_type>`_
  - ``None``
 
-
+If such a type is used with an Intersection that Intersection shall evaluate to ``Never``.
 
 The reasoning behind this is that these types can't be subtyped and shouldn't be
 dynamically extended.
@@ -241,47 +270,9 @@ The resulting ``Merged`` protocol shall be used internally by the type checker a
 
 
 
-TODO: Structural type of Intersection[A, B]?
-—------------------------------------------
-
-`isinstance` and `issubclass`
------------------------------
-
-Similarly to union types (see PEP-604), the new syntax should be valid to use in `isinstance` and `issubclass` calls, as long as the intersected types are valid arguments to `isinstance` and `issubclass`.
-
-::
-
-    class A: ...
-    class B: ...
-    class C(A, B): ...
-
-    # Valid
-    isinstance(C(), A & B)
-    # Invalid
-    isinstance([], list[A] & list[B])
-
-    # Valid
-    issubclass(C, A & B)
-    # Invalid
-    issubclass(list[C], list[A] & list[B])
-
-The `isinstance` or `issubclass` check for an Intersection is equal to the combined checks of all arguments passed:
-
-::
-
-    assert isinstance(val, A & B) == isinstance(val, A) and isinstance(val, B)
-    assert issubclass(val, A & B) == issubclass(val, A) and issubclass(val, B)
-
-However the above only applies to concrete types, not Protocols. When performing an `isinstance` or `issubclass` check
-for an Intersection of protocol types, `isinstance` and `issubclass` checks for equivalence to the union of all attributes and
-methods of the object passed in.
 
 
 
-The reason for the difference in behaviour between concrete and protocol types here is the following.
-The logic for checking concrete types works by checking that the method resolution order of all objects
-passed are equivalent. However, this is not possible to do for protocols. Consequently, it is necessary
-to check that the combined behaviour of objects' attributes and methods.
 
 .. [WIKI1] https://en.wikipedia.org/wiki/Intersection_type
 .. [WIKI2] https://en.wikipedia.org/wiki/Intersection_type_discipline
