@@ -105,7 +105,7 @@ There are concrete types that can't be subclassed, they are
  - ``typing.Never`` and ``typing.NoReturn`` also called `bottom type <https://en.wikipedia.org/wiki/Bottom_type>`_
  - ``None``
 
-If such a type is used with an Intersection that Intersection shall evaluate to ``Never``.
+If such a type is used within an Intersection this Intersection shall evaluate to ``Never``.
 
 The reasoning behind this is that these types can't be subtyped and shouldn't be
 dynamically extended.
@@ -129,8 +129,10 @@ Doing this early prevents issues during subtyping or assignments checks.
         return New
 
     reveal_type(enhance(str))  # okay
-    reveal_type(enhance(None))  # raises a TypeError
+    reveal_type(enhance(None))  # raises a TypeError on runtime, should be flagged by TypeCheckers
 
+It is important to note that once a type checker evaluated anything to ``Never`` within an Intersection it can stop further evaluations an return ``Never``.
+This way a lot of edge cases by mixin types that can't be mixed are handled easily.
 
 Handling Callables
 ------------------
