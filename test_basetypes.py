@@ -1,6 +1,5 @@
 import pytest
 
-
 base_types = (
     int,
     float,

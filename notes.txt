@@ -1,4 +1,4 @@
-(A | B) & C = (A & C) | (B & C) 
+(A | B) & C = (A & C) | (B & C)
 intersection[A | B] = A | B
 
 T & None = Never
@@ -18,5 +18,4 @@ T & A & T = T & A
 
 Intersection of class types = check the mro
 Intersection of Protocols = just combine the protocols (possible collisions)
-Interesection of a combination of classes and protocols == must be in the mro AND typecheck with the combined protocols 
-
+Interesection of a combination of classes and protocols == must be in the mro AND typecheck with the combined protocols

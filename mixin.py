@@ -1,6 +1,8 @@
 from typing import Protocol, Self
-#from type_intersections import Intersection
+
+# from type_intersections import Intersection
 from typing_protocol_intersection import ProtocolIntersection
+
 
 class User:
     @property
@@ -20,9 +22,11 @@ class ViewProtocol(Protocol):
     def dispatch(self, request: Request) -> str:
         ...
 
+
 class MixinProtocol(Protocol):
     def valid_user(self, user: str) -> bool:
         ...
+
 
 class View:
     def dispatch(self, request: Request) -> str:

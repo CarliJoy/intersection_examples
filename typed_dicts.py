@@ -1,4 +1,5 @@
 import typing
+
 from basedtyping import Intersection
 
 
@@ -18,5 +19,7 @@ class Intersected(typing.TypedDict):
     common: str | bytes
 
 
-def is_equal(var: Intersection[A, B]) -> Intersected:  # The two representations are equal
+def is_equal(
+    var: Intersection[A, B]
+) -> Intersected:  # The two representations are equal
     return var  # no type error

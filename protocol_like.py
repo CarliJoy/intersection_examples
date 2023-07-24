@@ -14,6 +14,7 @@ class A2:
 class A3:
     a: str
 
+
 class AProtocol(Protocol):
     a: str
 
@@ -21,11 +22,14 @@ class AProtocol(Protocol):
 class ACombined(A1, A2):
     ...
 
+
 def foo(a: Intersection[A1, A2]) -> None:
     ...
 
+
 def foo_protocol(a: Intersection[A1, AProtocol]):
     ...
+
 
 foo(A3())
 
@@ -38,15 +42,21 @@ foo_protocol(ACombined())
 class A:
     foo: str
 
+
 class AProto(Protocol):
     def foobar(self, i: int) -> str:
         ...
+
 
 class BProto(Protocol):
     def foobar(self, i: int) -> int:
         ...
 
-new = Intersection[AProto, BProto]  # should give an Type Error, as overload is not working
+
+new = Intersection[
+    AProto, BProto
+]  # should give an Type Error, as overload is not working
+
 
 class ManualOverload(Protocol):
     @overload
@@ -57,12 +67,15 @@ class ManualOverload(Protocol):
     def foobar(self, i: int) -> int:
         ...
 
-    def foobar(self, i: int) -> str|int:
+    def foobar(self, i: int) -> str | int:
         ...
+
+
 def do(x: Intersection[BProto, AProto]):
     reveal_type(x.foobar)
     reveal_type(x.foobar(10))
     # reveal_type(x.foobar(x="str"))
+
 
 def that(x: ManualOverload):
     reveal_type(x.foobar)

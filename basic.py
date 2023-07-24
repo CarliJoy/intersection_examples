@@ -1,4 +1,4 @@
-from typing import Protocol, runtime_checkable, overload, reveal_type
+from typing import Protocol, overload, reveal_type, runtime_checkable
 
 from basedtyping import Intersection
 
@@ -6,11 +6,13 @@ from basedtyping import Intersection
 class A(str):
     a: str
 
+
 class B(float):
     b: str
 
 
-AB = Intersection[A,B]
+AB = Intersection[A, B]
+
 
 @runtime_checkable
 class AB_proto(Protocol):
@@ -22,6 +24,7 @@ class Foo:
     a: str
     b: str
     d: str
+
 
 assert isinstance(Foo(), AB_proto)
 assert isinstance(Foo(), AB)
@@ -36,6 +39,7 @@ class One:
     def foo(self, a: int) -> str:
         ...
 
+
 class Two:
     def foo(self, a: int) -> int:
         ...
@@ -48,6 +52,7 @@ class OkayOne:
     def foo(self, a: int) -> str:
         ...
 
+
 class OkayTwo:
     def foo(self, a: str) -> int:
         ...
@@ -55,7 +60,7 @@ class OkayTwo:
 
 class IntersectionOneTwo:
     @overload
-    def foo(self, a:int) -> str:
+    def foo(self, a: int) -> str:
         ...
 
     @overload

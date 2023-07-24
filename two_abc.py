@@ -1,11 +1,11 @@
 from collections.abc import Container, Iterable, Iterator
-from typing_extensions import reveal_type
-
-from basedtyping import Intersection
-
 from typing import TypeVar
 
+from basedtyping import Intersection
+from typing_extensions import reveal_type
+
 T = TypeVar("T")
+
 
 class IterableContainer(Iterable[int], Container[int]):
     ...
@@ -31,7 +31,6 @@ class Test(IterableContainer[int]):
         return True
 
 
-
 def assertIn(item: T, thing: Intersection[Iterable[T], Container[T]]) -> None:
     if item not in thing:
         # Debug output
@@ -39,6 +38,7 @@ def assertIn(item: T, thing: Intersection[Iterable[T], Container[T]]) -> None:
             print(it)
             reveal_type(it)
 
+
 f(Test())  # Fails
 g(Test())  # Okay
-assertIn(1, [1,2]) # Okay
+assertIn(1, [1, 2])  # Okay

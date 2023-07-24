@@ -1,9 +1,8 @@
 import dataclasses
-from typing import Protocol, TypeVar, Any, cast
+from typing import Any, Protocol, TypeVar, cast
 
 from basedtyping import Intersection
 from typing_extensions import reveal_type
-
 
 T = TypeVar("T")
 
@@ -22,7 +21,6 @@ def add_function(obj: T) -> Intersection[T, EnhancedClass]:
     return new
 
 
-
 @dataclasses.dataclass
 class X:
     bar: str
@@ -35,10 +33,13 @@ reveal_type(XEnhanched.bar)
 reveal_type(XEnhanched.foobar)
 reveal_type(add_function(None))
 add_function(None).foobar(2)
+
+
 class YEnhanced:
     bar: str
+
     def foobar(self, bar: Intersection[T, EnhancedClass]) -> str:
         return ""
 
 
-y_enhanced=YEnhanced()
+y_enhanced = YEnhanced()

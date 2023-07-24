@@ -2,7 +2,6 @@ from typing import Any, Generic, Protocol, TypeVar
 
 from typing_extensions import reveal_type
 
-
 _T = TypeVar("_T")
 
 
