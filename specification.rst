@@ -256,6 +256,16 @@ Tuples with a different amount of elements should evaluate to ``Never``.
 
 % TODO How to handle mixin of invariant and co-variant collections: https://github.com/CarliJoy/intersection_examples/issues/2
 
+Unions
+------
+
+The general set theory applies for handling Unions. The following rules apply
+
+% TODO Define an alogrithm that shall be used by type checkers
+ - ``(A | B) & C = (A & C) | (B & C)``
+
+% see https://github.com/CarliJoy/intersection_examples/issues/3
+
 Assignability
 -------------
 
