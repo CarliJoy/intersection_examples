@@ -4,7 +4,7 @@
 This following PEP was written originally on the PyCON US by Kevin Millikin (@kmillikin) and Sergei Lebedev (@superbobry).
 The specification was adopted on a Sprint at Europython -> be aware it is known to be unsound and overly complex at the moment.
 
-
+See also `The General Status Issues <https://github.com/CarliJoy/intersection_examples/issues/8>`_.
 
 PEP: 9999
 Title: Intersection types
