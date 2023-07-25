@@ -9,4 +9,6 @@ For short exchange and discussion you can use [this Discord server](https://disc
 
 If you want to contribute to this repo [write into this issue](https://github.com/CarliJoy/intersection_examples/issues/4).
 
-The general state is [tracked in this issues](https://github.com/CarliJoy/intersection_examples/issues/8).
+The general state is [tracked in this issue](https://github.com/CarliJoy/intersection_examples/issues/8).
+
+Experimental CPython implementation of intersections can be found in [this issue](https://github.com/CarliJoy/intersection_examples/issues/9)
