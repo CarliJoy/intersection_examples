@@ -23,7 +23,7 @@ Abstract
 ========
 
 This PEP proposes the addition of intersection types.
-They are denoted as Intersection[A, B] or A & B and they describe values that have both types A and
+They are denoted as `A & B` or `Intersection[A, B]` and they describe values that have both types A and
 B.
 Intersection types serve as a complementary concept to union types introduced in PEP-484.
 The primary use cases for intersection types include: mixin classes, which require certain APIs to
@@ -43,20 +43,18 @@ the PEP solves.]
 PEP-484 introduced the concept of a union type, written `Union[A, B]` which describes values of
 either type `A` or type `B`.
 Intersection types provide a different (complementary) way of combining types.
-The type `Intersection[A, B]` describes values which have both type `A` and type `B`.
+The type `A & B` describes values which have both type `A` and type `B`.
 
 For example,
 
 ::
-
-    from typing import Intersection
 
     class A: ...
     class B: ...
     class C(A, B): ...
     class D(A): ...
 
-    def f(value: Intersection[A, B]): ...
+    def f(value: A & B): ...
 
 
 here it is valid to call `f` on an instance of `C`, but invalid to call it with instances of `A`,
@@ -84,7 +82,7 @@ Intersection types allow expressing that directly via
 ::
 
     class LoginRequiredMixin:
-        def dispatch(self: Intersection[LoginRequiredMixin, View], request, *args, **kwargs): ...
+        def dispatch(self: LoginRequiredMixin & View, request, *args, **kwargs): ...
 
 Source: https://docs.djangoproject.com/en/3.2/topics/auth/default/#django.contrib.auth.mixins.LoginRequiredMixin
 
@@ -143,7 +141,8 @@ For example, instead of
         if item not in it:
             raise AssertionError(f“{target} does not occur in {‘, ‘.join(map(str, it))}”)
 
-users could drop the `IterableContainer` class and instead annotate `it` as `Intersection[Iterable[T], Container[T]]`.
+users could drop the `IterableContainer` class and instead annotate `it` as
+`Iterable[T] & Container[T]`.
 
 Source: https://github.com/python/typing/issues/18
 
@@ -172,7 +171,7 @@ ad-hoc way::
     class BookBased(TypedDict):
         based_on: str
 
-    BookBasedMovie = Intersection[Movie, BookBased]
+    BookBasedMovie = Movie & BookBased
 
 
 Type narrowing in control flow
@@ -192,12 +191,12 @@ If `B` is a subtype of `A`
 then that static type is the same as `B`.
 But of course, `A` and `B` do not necessarily have any
 subtype relationship.
-With intersection types the static type of `x` can be exactly represented as
-`Intersection[A, B]` and the programmer can write the type annotation for `f` accordingly:
+With intersection types the static type of `x` can be exactly represented as `A & B` and the
+programmer can write the type annotation for `f` accordingly:
 
 ::
 
-    def f(x: Intersection[A, B]): ...
+    def f(x: A & B): ...
 
 Type checkers actually do implement some form of intersection types internally to support type
 narrowing.
@@ -214,7 +213,7 @@ including more complicated cases such as:
     if isinstance(y, C):
         g(y)
 
-At the call to `g`, `y` has the static type `Intersection[Union[A, B], C]`.
+At the call to `g`, `y` has the static type `Union[A, B] & C`.
 (Both mypy and pyright
 "distribute" the union over the intersection, displaying `Union[<subclass of "A" and "C">, <subclass
 of "B" and "C">]` and `<subclass of A and C> | <subclass of B and C>` respectively.)
@@ -247,7 +246,7 @@ The only safe things to do with such a value are the things that are allowed for
 the union, that is the _intersection_ of those things to do.
 
 Similarly, intersection types describe the intersection of the sets of values of their components.
-For example, `Intersection[str,C]` describes the set containing all Python objects that are both
+For example, `str & C` describes the set containing all Python objects that are both
 elements of the set of strings and elements of the set of instances of `C` including instances of
 its subclasses.
 Notice that this does not require that `C` is a subclass of `str` or vice versa.
@@ -270,14 +269,13 @@ An intersection type itself is a subtype of each of its components, because it d
 the sets described by each component.
 
 This set-based intuition extends to other types besides class instances.
-For example, we can form an intersection of a union type like `Intersection[Union[A,B],C]`.
+For example, we can form an intersection of a union type like `(A | B) & C`.
 The first component of the intersection is the set containing all instances of `A` and all instances
 of `B`.
 The intersection with the set containing all instances of `C` describes all the Python objects that
 are both instances of the union (either `A` or `B`) and also instances of `C`.
 This set-based intuition justifies distributing the union over the intersection (as shown by mypy
-and pyright above) and recognizing that it describes the same set of objects as
-`Union[Intersection[A,C],Intersection[B,C]]`.
+and pyright above) and recognizing that it describes the same set of objects as `A & C | B & C`.
 
 
 Specification
@@ -309,13 +307,13 @@ this PEP.
 Syntax
 ------
 
-An intersection of types `A` and `B` could either be defined via `Intersection[A, B]` or using the
-`&` operator as `A & B`.
+An intersection of types `A` and `B` should be defined using the operator `A & B`, or
+`Intersection[A, B]` when programmatically generating intersections.
 
 
 Order and Emptiness
 -------------------
-As for Unions the Order of elements of a Intersection does not matter.
+As for unions the order of elements of an intersection does not matter.
 
 
 `isinstance` and `issubclass`
@@ -325,7 +323,7 @@ Similarly to union types (see PEP-604), the new syntax should be valid to use in
 ``issubclass`` calls, as long as the intersected types are valid arguments to ``isinstance`` and
 ``issubclass``.
 
-The `isinstance` or `issubclass` check for an Intersection is equal to the combined checks of all
+The `isinstance` or `issubclass` check for an intersection is equal to the combined checks of all
 arguments passed:
 
 ::
@@ -338,11 +336,11 @@ arguments passed:
 
 
 It shall be noted, that following the `PEP 544 <https://peps.python.org/pep-0544/#support-isinstance-checks-by-default>`_ about the rejected default ``isinstance`` check:
-If any Protocol within the ``Intersection`` isn't marked with ``typing.runtime_checkable``,
+If any Protocol within the intersection isn't marked with ``typing.runtime_checkable``,
 ``isinstance`` will raise a TypeError.
 
 
-So one possibility to fulfil an Intersection is for a class to be a child of all intersected classes.
+So one possibility to fulfill an intersection is for a class to be a child of all intersected classes.
 
 ::
     class C(A, B): ...
@@ -355,15 +353,15 @@ Basic Reductions
 In order for the following rules intended for type checkers to work correctly the following
 reduction have to be applied to Intersections first:
 
-- Nested Intersection shall be flattened, i.e ``Intersection[A, Intersection[B, C]] ==
+- Nested intersections shall be flattened, i.e ``Intersection[A, Intersection[B, C]] ==
   Intersection[A, B, C]``
 - If a (concrete or protocol) type ``A`` is a subtype of ``B``, ``A`` shall be removed from the
-  Intersection
+  intersection
 - If a protocol ``BP`` defines **all** methods and properties of a protocol ``AP``, ``AP`` shall be
-  removed from the Intersection
+  removed from the intersection
 - If the concrete class ``A`` fulfils the Protocol ``AP``, ``AP`` shall be removed from the
-  Intersection
-- An Intersection with only one element shall be normalized to the element.
+  intersection
+- An intersection with only one element shall be normalized to the element.
 
 
 ``Any`` Reduction
@@ -377,7 +375,7 @@ As `PEP 483`_ already suggested: ``Any`` shall be removed from an ``Intersection
 
 ``Never`` Evaluation
 --------------------
-An Intersection that contains either two classes that are a or are a subclass of two different `internal base classes <https://docs.python.org/3/library/stdtypes.html>`_ shall evaluate to ``Never``.
+An intersection that contains either two classes that are a or are a subclass of two different `internal base classes <https://docs.python.org/3/library/stdtypes.html>`_ shall evaluate to ``Never``.
 Examples for internal baseclasses are:
 
 - BaseException
@@ -402,7 +400,7 @@ There are concrete types that can't be subclassed, they are
  - ``typing.Never`` and ``typing.NoReturn`` also called `bottom type <https://en.wikipedia.org/wiki/Bottom_type>`_
  - ``None``
 
-If such a type is used within an Intersection this Intersection shall evaluate to ``Never``.
+If such a type is used within an intersection this intersection shall evaluate to ``Never``.
 
 The reasoning behind this is that these types can't be subtyped and shouldn't be dynamically
 extended.
@@ -410,8 +408,7 @@ Doing this early prevents issues during subtyping or assignments checks.
 
 ::
 
-    from typing import TypeVar, reveal_type, Intersection
-        from typing import TypeVar, reveal_type, Intersection
+    from typing import TypeVar, reveal_type
 
     T = TypeVar("T")
 
@@ -419,7 +416,7 @@ Doing this early prevents issues during subtyping or assignments checks.
         is_great: bool
 
 
-    def enhance(cls: type[T]) -> type[Intersection[T, Enhanced]]:
+    def enhance(cls: type[T]) -> type[T & Enhanced]:
         class New(cls, Enhanced):
             ...
 
@@ -429,7 +426,7 @@ Doing this early prevents issues during subtyping or assignments checks.
     reveal_type(enhance(None))  # raises a TypeError on runtime, should be flagged by TypeCheckers
 
 It is important to note that once a type checker evaluated anything to ``Never`` within an
-Intersection it can stop further evaluations an return ``Never``.
+intersection it can stop further evaluations an return ``Never``.
 This way a lot of edge cases by mixin types that can't be mixed are handled easily.
 
 Handling Callables
@@ -445,8 +442,8 @@ Every Callable within an intersection shall be treated like a ``def __call__()``
     class CallProto:
         def __call__(a: str, b: int) -> float: ...
 
-    # Type Checker should perform the following conversation
-    # Intersection[T, MyCallable] => Intersection[T, CallProto]
+    # Type Checker should perform the following conversion
+    # T & MyCallable => T & CallProto
 
 This way the ``overload`` mechanism described below can be used.
 
@@ -518,7 +515,7 @@ Please note for ``@overload`` the sub file rules apply as described in `PEP 484 
 TypedDicts
 ----------
 
-If multiple TypedDicts are given within an Intersection, their attributes shall be handled as described with ``Protocol`` attributes.
+If multiple TypedDicts are given within an intersection, their attributes shall be handled as described with ``Protocol`` attributes.
 
 ::
 
@@ -574,7 +571,7 @@ The following rules apply
 Assignability
 -------------
 
-A type checker validating that a variable can be assigned to an Intersection the following should be
+A type checker validating that a variable can be assigned to an intersection the following should be
 done:
 
  - check that the variable ``issubclass()`` of all concrete classes
@@ -584,9 +581,6 @@ The differentiation between concrete types (nominal typing) and protocols (struc
 inherent the current Python type system and shall not be changed.
 
 ::
-
-    from typing import Intersection
-
 
     class A:
         ...
@@ -598,10 +592,10 @@ inherent the current Python type system and shall not be changed.
         ...
 
     # valid since C is a subtype of all intersected types
-    x: Intersection[A, B] = C()
+    x: A & B = C()
 
     # invalid since the subtype B is missing
-    x: Intersection[A, B] = A()
+    x: A & B = A()
 
 
 Subtyping
@@ -610,7 +604,7 @@ As it is not possible to create subtypes of Unions, it is also not possible to c
 Intersections.
 
 Still a type checker needs to be able to create a virtual type internally when ``A && B`` is used.
-As it doesn't know anything about potential MRO of concrete classes (remember the order of an
+As it doesn't know anything about potential MRO of concrete classes (since the order of an
 ``Intersection`` does not matter), we need a different way of creating types for attributes.
 To do so, the type checker shall apply the algorithm described in Protocol Reduction not only to
 protocols but to all types given.
