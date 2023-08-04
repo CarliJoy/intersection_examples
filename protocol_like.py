@@ -1,4 +1,4 @@
-from typing import Protocol, overload
+from typing import Protocol, overload, reveal_type
 
 from basedtyping import Intersection
 

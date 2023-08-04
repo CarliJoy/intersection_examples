@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Protocol, TypeVar, cast
+from typing import Protocol, TypeVar, cast
 
 from basedtyping import Intersection
 from typing_extensions import reveal_type

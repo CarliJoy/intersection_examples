@@ -1,7 +1,4 @@
-from typing import Protocol, Self
-
-# from type_intersections import Intersection
-from typing_protocol_intersection import ProtocolIntersection
+from typing import Protocol
 
 
 class User:
