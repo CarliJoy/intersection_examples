@@ -23,22 +23,24 @@ Abstract
 ========
 
 This PEP proposes the addition of intersection types.
-They are denoted as `A & B` or `Intersection[A, B]` and they describe values that have both types A and
-B.
-Intersection types serve as a complementary concept to union types introduced in PEP-484.
-The primary use cases for intersection types include: mixin classes, which require certain APIs to
-be available in the class hierarchy; wrapper types, which add information to the original type
-without monkey patching; combining multiple protocols into a single structural type; ad-hoc merging
-of TypedDict types; and type narrowing in control flow.
-This PEP outlines the syntax, subtyping
-rules, assignability, isinstance and issubclass usage, and other aspects related to intersection
-types.[A short (~200 word) description of the technical issue being addressed.]
+They are denoted as `A & B` or `Intersection[A, B]` and they describe values that have both types A
+and B.
+Intersection types are a complementary concept to union types introduced in PEP-484.
 
-Motivation
-==========
+The primary use cases for intersection types include:
 
-[Clearly explain why the existing language specification is inadequate to address the problem that
-the PEP solves.]
+- mixin classes, which require certain APIs to be available in the class hierarchy;
+- wrapper types, which add information to the original type without monkey patching;
+- combining multiple protocols into a single structural type;
+- ad-hoc merging of TypedDict types; and
+- type narrowing in control flow.
+
+This PEP outlines the syntax, subtyping rules, assignability, isinstance and issubclass usage, and
+other aspects related to intersection types.[A short (~200 word) description of the technical issue
+being addressed.]
+
+Introduction
+============
 
 PEP-484 introduced the concept of a union type, written `Union[A, B]` which describes values of
 either type `A` or type `B`.
@@ -59,6 +61,15 @@ For example,
 
 here it is valid to call `f` on an instance of `C`, but invalid to call it with instances of `A`,
 `B` or `D`.
+
+Motivation
+==========
+
+This section motivates intersection types using examples that cannot be easily solved with current
+typing constructs.
+[Clearly explain why the existing language specification is inadequate to address the problem that
+the PEP solves.]
+
 
 Mixins
 ------
@@ -218,6 +229,32 @@ At the call to `g`, `y` has the static type `Union[A, B] & C`.
 "distribute" the union over the intersection, displaying `Union[<subclass of "A" and "C">, <subclass
 of "B" and "C">]` and `<subclass of A and C> | <subclass of B and C>` respectively.)
 
+Theory
+======
+
+Theoretical Definition
+----------------------
+In type theory, an intersection type can be allocated to values that can be assigned both the type σ
+and the type τ.
+This value can be given the intersection type σ ∩ τ in an intersection type system [WIKI1]_.
+This means by using an intersection type constructor ( ∩ ) it is possible to assign multiple types
+to a single term.
+In particular, if a term M can be assigned both the type σ and the type τ, then M be assigned the
+intersection type σ ∩ τ (and vice versa) [WIKI2]_.
+
+In other words specific to Python:
+``Intersection`` is a typing composition operator similar like `Union`.
+In order for ``Target`` to be a valid (sub)type of ``Union[T1, T2, Tn]``, ``Target`` must by a (sub)type of **any** ``Tn``.
+In contrary in order for `Target` to by a valid (sub)type of ``Intersection[T1, T2, Tn]``, ``Target`` must by a (sub)type of **all** ``Tn``.
+
+Python type system know concrete types as well as types defining interfaces (protocols).
+Furthermore python is a dynamically language with a gradual typing and language base types that
+behave different from normal classes.
+This could create a lot of ambiguities therefore the following rules are defined for the
+intersection type.
+Some of this rules were already defined `PEP 483`_ and were discussed in the further development of
+this PEP.
+
 Intuition based on sets
 -----------------------
 
@@ -280,29 +317,6 @@ and pyright above) and recognizing that it describes the same set of objects as 
 
 Specification
 =============
-
-Theoretical Definition
-----------------------
-In type theory, an intersection type can be allocated to values that can be assigned both the type σ
-and the type τ.
-This value can be given the intersection type σ ∩ τ in an intersection type system [WIKI1]_.
-This means by using an intersection type constructor ( ∩ ) it is possible to assign multiple types
-to a single term.
-In particular, if a term M can be assigned both the type σ and the type τ, then M be assigned the
-intersection type σ ∩ τ (and vice versa) [WIKI2]_.
-
-In other words specific to Python:
-``Intersection`` is a typing composition operator similar like `Union`.
-In order for ``Target`` to be a valid (sub)type of ``Union[T1, T2, Tn]``, ``Target`` must by a (sub)type of **any** ``Tn``.
-In contrary in order for `Target` to by a valid (sub)type of ``Intersection[T1, T2, Tn]``, ``Target`` must by a (sub)type of **all** ``Tn``.
-
-Python type system know concrete types as well as types defining interfaces (protocols).
-Furthermore python is a dynamically language with a gradual typing and language base types that
-behave different from normal classes.
-This could create a lot of ambiguities therefore the following rules are defined for the
-intersection type.
-Some of this rules were already defined `PEP 483`_ and were discussed in the further development of
-this PEP.
 
 Syntax
 ------
@@ -612,13 +626,6 @@ The resulting ``Merged`` protocol shall be used internally by the type checker a
 the the given ``Intersection`` type for all further checks.
 
 % TODO maybe ``reveal_type`` could accepts a keyword argument, verbose that prints this protocol?
-
-
-
-
-
-
-
 
 .. [WIKI1] https://en.wikipedia.org/wiki/Intersection_type
 .. [WIKI2] https://en.wikipedia.org/wiki/Intersection_type_discipline
