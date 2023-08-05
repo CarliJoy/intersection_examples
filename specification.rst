@@ -555,22 +555,6 @@ If multiple TypedDicts are given within an intersection, their attributes shall 
     def is_equal(var: A & B) -> Intersected:  # The two representations are equal
         return var  # no type error
 
-Collections
------------
-The general idea that an attributes of intersected types become unions holds also for all kinds of
-collections.
-
- - ``dict[str, int] & dict[bytes, float] => dict[str|bytes, float|int]``
- - ``list[str] & list[bytes] => list[str|bytes]``
- - ``tuple[str, float] & tuple[bytes, int] => tuple[str|bytes, float|int]``
-
-Mixing incompatible collections should be not possible as they should have already evaluated to
-``Never``.
-
-Tuples with a different amount of elements should evaluate to ``Never``.
-
-% TODO How to handle mixin of invariant and co-variant collections: https://github.com/CarliJoy/intersection_examples/issues/2
-
 Unions
 ------
 
