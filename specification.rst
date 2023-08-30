@@ -80,11 +80,15 @@ For example,
 
 ::
 
-    class LoginRequiredMixin:
+    class LoginRequiredMixin(AccessMixin):
         def dispatch(self, request, *args, **kwargs):
             if not request.user.is_authenticated:
-        	     ...
-            return super().dispatch(request, *args, **kwargs)
+                # calling a method of `AccessMixin`
+        	    return self.handle_no_permission()  # Valid
+            # calling a method of `View`
+            return super().dispatch(request, *args, **kwargs)  # Invalid
+            #              ^^^^^^^^ Cannot access member "dispatch" for type "AccessMixin"
+            #                         Member "dispatch" is unknown
 
 The `LoginRequiredMixin` is designed to be used with the `View` base class which defines the
 `dispatch` method.
@@ -92,8 +96,15 @@ Intersection types allow expressing that directly via
 
 ::
 
-    class LoginRequiredMixin:
-        def dispatch(self: LoginRequiredMixin & View, request, *args, **kwargs): ...
+    from typing import Self
+
+    class LoginRequiredMixin(AccessMixin):
+        def dispatch(self: Self & View, request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                # calling a method of `AccessMixin`
+        	    return self.handle_no_permission()  # Valid
+            # calling a method of `View`
+            return super().dispatch(request, *args, **kwargs)  # Valid
 
 Source: https://docs.djangoproject.com/en/3.2/topics/auth/default/#django.contrib.auth.mixins.LoginRequiredMixin
 
@@ -156,6 +167,30 @@ users could drop the `IterableContainer` class and instead annotate `it` as
 `Iterable[T] & Container[T]`.
 
 Source: https://github.com/python/typing/issues/18
+
+
+Self
+----
+
+PEP-673 introduced `Self`, a simple and intuitive way to annotate methods that return an instance
+of their class.
+If methods or attributes of intersection types return `Self`-typed values, they should be inferred
+as intersection types.
+For example,
+
+::
+
+    from typing import Self
+
+    class Sample: ...
+
+    class Mixin:
+        @property
+        def me(self) -> Self: ...
+
+    a: Sample & Mixin
+    reveal_type(a.me)  # Sample & Mixin
+
 
 TypedDict
 ---------
