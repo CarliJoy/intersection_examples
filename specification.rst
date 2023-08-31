@@ -356,8 +356,21 @@ Specification
 Syntax
 ------
 
-An intersection of types `A` and `B` should be defined using the operator `A & B`, or
-`Intersection[A, B]` when programmatically generating intersections.
+An intersection of types ``A`` and ``B`` should be defined using the operator ``A & B``, or
+``Intersection[A, B]`` when programmatically generating intersections.
+
+Note that the use of the ampersand(``&``) operator in this context requires a grammar change,
+and is therefore available only in new versions of Python.
+To enable use of intersection types in older versions of Python, we introduce the ``Intersection``
+type operator that can be used in place of the ampersand operator:
+
+::
+
+    # generating intersections using the ampersand operator in new versions of Python
+    def f(value: A & B): ...
+
+    # generating intersections using `Intersection` in older versions of Python
+    def f(value: Intersection[A, B]): ...
 
 
 Order and Emptiness
