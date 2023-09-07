@@ -42,10 +42,8 @@ being addressed.]
 Introduction
 ============
 
-PEP-484 introduced the concept of a union type, written `Union[A, B]` which describes values of
-either type `A` or type `B`.
-Intersection types provide a different (complementary) way of combining types.
-The type `A & B` describes values which have both type `A` and type `B`.
+PEP-484 introduced the concept of a union type, written ``Union[A, B]`` which describes values of
+either type ``A`` or type ``B``.
 
 For example,
 
@@ -56,11 +54,30 @@ For example,
     class C(A, B): ...
     class D(A): ...
 
-    def f(value: A & B): ...
+    # PEP-604 was introduced to allow writing `Union[X, Y]` as `X | Y`
+    def fu(value: A | B): ...
 
+    fu(A())  # Valid
+    fu(B())  # Valid
+    fu(C())  # Valid
+    fu(D())  # Valid
 
-here it is valid to call `f` on an instance of `C`, but invalid to call it with instances of `A`,
-`B` or `D`.
+Intersection types provide a different (complementary) way of combining types.
+The type ``A & B`` describes values which have both type ``A`` and type ``B``.
+
+For example,
+
+::
+
+    def fi(value: A & B): ...
+
+    fi(A())  # Invalid
+    fi(B())  # Invalid
+    fi(C())  # Valid
+    fi(D())  # Invalid
+
+here it is valid to call ``fi`` on an instance of ``C``, but invalid to call it with instances of
+``A``, ``B`` or ``D``.
 
 Motivation
 ==========
