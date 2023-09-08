@@ -23,8 +23,8 @@ Abstract
 ========
 
 This PEP proposes the addition of intersection types.
-They are denoted as `A & B` or `Intersection[A, B]` and they describe values that have both types A
-and B.
+They are denoted as ``A & B`` or ``Intersection[A, B]`` and they describe values that have both
+types A and B.
 Intersection types are a complementary concept to union types introduced in PEP-484.
 
 The primary use cases for intersection types include:
@@ -107,8 +107,8 @@ For example,
             #              ^^^^^^^^ Cannot access member "dispatch" for type "AccessMixin"
             #                         Member "dispatch" is unknown
 
-The `LoginRequiredMixin` is designed to be used with the `View` base class which defines the
-`dispatch` method.
+The ``LoginRequiredMixin`` is designed to be used with the ``View`` base class which defines the
+``dispatch`` method.
 Intersection types allow expressing that directly via
 
 ::
@@ -171,17 +171,17 @@ For example, instead of
     from collections.abc import Container, Iterable
     from typing import Protocol, TypeVar
 
-    T = TypeVar(“T”)
+    T = TypeVar("T")
 
     class IterableContainer(Iterable[T], Container[T], Protocol):
         ...
 
     def assert_in(target: T, it: IterableContainer[T]) -> bool:
         if item not in it:
-            raise AssertionError(f“{target} does not occur in {‘, ‘.join(map(str, it))}”)
+            raise AssertionError(f"{target} does not occur in {', '.join(map(str, it))}")
 
-users could drop the `IterableContainer` class and instead annotate `it` as
-`Iterable[T] & Container[T]`.
+users could drop the ``IterableContainer`` class and instead annotate ``it`` as
+``Iterable[T] & Container[T]``.
 
 Source: https://github.com/python/typing/issues/18
 
@@ -189,10 +189,10 @@ Source: https://github.com/python/typing/issues/18
 Self
 ----
 
-PEP-673 introduced `Self`, a simple and intuitive way to annotate methods that return an instance
+PEP-673 introduced ``Self``, a simple and intuitive way to annotate methods that return an instance
 of their class.
-If methods or attributes of intersection types return `Self`-typed values, they should be inferred
-as intersection types.
+If methods or attributes of intersection types return ``Self``-typed values, they should be
+inferred as intersection types.
 For example,
 
 ::
@@ -212,9 +212,9 @@ For example,
 TypedDict
 ---------
 
-PEP-589 introduced `TypedDict`, a way to define precise types for dictionaries with a fixed set of
-keys.
-Multiple `TypedDict` types could be merged into a single `TypedDict` type through subclassing.
+PEP-589 introduced ``TypedDict``, a way to define precise types for dictionaries with a fixed set
+of keys.
+Multiple ``TypedDict`` types could be merged into a single ``TypedDict`` type through subclassing.
 For example,
 
 ::
@@ -228,7 +228,7 @@ For example,
     class BookBasedMovie(Movie):
         based_on: str
 
-With intersection types, `TypedDict` types no longer need to be inherited, and can be combined in
+With intersection types, ``TypedDict`` types no longer need to be inherited, and can be combined in
 ad-hoc way::
 
     class BookBased(TypedDict):
@@ -241,7 +241,7 @@ Type narrowing in control flow
 ------------------------------
 
 Type checkers employ type narrowing for certain conditionally executed code as described in PEP-647.
-An `isinstance` check, for example, can be used to narrow the static type of its first argument
+An ``isinstance`` check, for example, can be used to narrow the static type of its first argument
 
 ::
 
@@ -249,13 +249,13 @@ An `isinstance` check, for example, can be used to narrow the static type of its
     if isinstance(x, B):
         f(x)
 
-In the call to `f`, `x` is known to have both static types `A` and `B`.
-If `B` is a subtype of `A`
-then that static type is the same as `B`.
-But of course, `A` and `B` do not necessarily have any
+In the call to ``f``, ``x`` is known to have both static types ``A`` and ``B``.
+If ``B`` is a subtype of ``A``
+then that static type is the same as ``B``.
+But of course, ``A`` and ``B`` do not necessarily have any
 subtype relationship.
-With intersection types the static type of `x` can be exactly represented as `A & B` and the
-programmer can write the type annotation for `f` accordingly:
+With intersection types the static type of ``x`` can be exactly represented as ``A & B`` and the
+programmer can write the type annotation for ``f`` accordingly:
 
 ::
 
@@ -263,7 +263,7 @@ programmer can write the type annotation for `f` accordingly:
 
 Type checkers actually do implement some form of intersection types internally to support type
 narrowing.
-This can be observed using a facility like `reveal_type` in place of the call to `f`
+This can be observed using a facility like ``reveal_type`` in place of the call to ``f``
 above.
 For instance, mypy will display `<subclass of "A" and "B">` and pyright will display
 `<subclass of A and B>`.
@@ -276,7 +276,7 @@ including more complicated cases such as:
     if isinstance(y, C):
         g(y)
 
-At the call to `g`, `y` has the static type `Union[A, B] & C`.
+At the call to ``g``, ``y`` has the static type ``Union[A, B] & C``.
 (Both mypy and pyright
 "distribute" the union over the intersection, displaying `Union[<subclass of "A" and "C">, <subclass
 of "B" and "C">]` and `<subclass of A and C> | <subclass of B and C>` respectively.)
@@ -312,39 +312,39 @@ Intuition based on sets
 
 A simple way to understand Python static types is to think of them as describing sets of runtime
 objects.
-The type `str` describes the set of all Python strings.
-Likewise if `C` is a class then the type `C` describes the set of all instances of `C` including
-instances of its subclasses.
+The type ``str`` describes the set of all Python strings.
+Likewise if ``C`` is a class then the type ``C`` describes the set of all instances of ``C``
+including instances of its subclasses.
 A type annotation on a variable declares that at runtime the value of the variable will be an
 element of the set that the annotation describes.
 (Which is not necessarily true because the type system allows conversions both to and from the type
-`Any` without any runtime checks.)
+``Any`` without any runtime checks.)
 
-The rules for subtyping sketched in PEP-483 are intended to ensure that if a type `B` is a subtype
-of a type `A`, then the set of values described by `B` is always a subset of the set of values
-described by `A`.
+The rules for subtyping sketched in PEP-483 are intended to ensure that if a type ``B`` is a subtype
+of a type ``A``, then the set of values described by ``B`` is always a subset of the set of values
+described by ``A``.
 
 Union types describe the union of the sets of values of their components.
-For example, `Union[str,C]` describes the set containing all Python strings and all instances of `C`
-including instances of its subclasses.
-A type annotation `Union[str,C]` on a variable declares that at runtime the value of the variable
-will either be a string or an instance of `C` (or possibly both).
+For example, ``Union[str,C]`` describes the set containing all Python strings and all instances of
+``C`` including instances of its subclasses.
+A type annotation ``Union[str,C]`` on a variable declares that at runtime the value of the variable
+will either be a string or an instance of ``C`` (or possibly both).
 This is why the operations that a typechecker allows on such a value are only the operations that
-are allowed on both strings and instances of `C`.
+are allowed on both strings and instances of ``C``.
 The only safe things to do with such a value are the things that are allowed for all components of
 the union, that is the _intersection_ of those things to do.
 
 Similarly, intersection types describe the intersection of the sets of values of their components.
-For example, `str & C` describes the set containing all Python objects that are both
-elements of the set of strings and elements of the set of instances of `C` including instances of
+For example, ``str & C`` describes the set containing all Python objects that are both elements
+of the set of strings and elements of the set of instances of ``C`` including instances of
 its subclasses.
-Notice that this does not require that `C` is a subclass of `str` or vice versa.
-There may be classes that are themselves subclasses of both `str` and `C` and so their instances
-will be in the intersection.
-There may even be several such subclasses of `str` and `C` that are not necessarily subclass-related
-to each other.
+Notice that this does not require that ``C`` is a subclass of ``str`` or vice versa.
+There may be classes that are themselves subclasses of both ``str`` and ``C`` and so their
+instances will be in the intersection.
+There may even be several such subclasses of ``str`` and ``C`` that are not necessarily
+subclass-related to each other.
 And the intersection may be empty if there are no Python objects that are both in the set of strings
-and the set of instances of `C`.
+and the set of instances of ``C``.
 
 The operations that a typechecker allows on an intersection type are the operations that are allowed
 on any component.
@@ -358,13 +358,13 @@ An intersection type itself is a subtype of each of its components, because it d
 the sets described by each component.
 
 This set-based intuition extends to other types besides class instances.
-For example, we can form an intersection of a union type like `(A | B) & C`.
-The first component of the intersection is the set containing all instances of `A` and all instances
-of `B`.
-The intersection with the set containing all instances of `C` describes all the Python objects that
-are both instances of the union (either `A` or `B`) and also instances of `C`.
+For example, we can form an intersection of a union type like ``(A | B) & C``.
+The first component of the intersection is the set containing all instances of ``A`` and all instances
+of ``B``.
+The intersection with the set containing all instances of ``C`` describes all the Python objects that
+are both instances of the union (either ``A`` or ``B``) and also instances of ``C``.
 This set-based intuition justifies distributing the union over the intersection (as shown by mypy
-and pyright above) and recognizing that it describes the same set of objects as `A & C | B & C`.
+and pyright above) and recognizing that it describes the same set of objects as ``A & C | B & C``.
 
 
 Specification
