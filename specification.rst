@@ -24,7 +24,7 @@ Abstract
 
 This PEP proposes the addition of intersection types.
 They are denoted as ``A & B`` or ``Intersection[A, B]`` and they describe values that have both
-types A and B.
+types ``A`` and ``B``.
 Intersection types are a complementary concept to union types introduced in PEP-484.
 
 The primary use cases for intersection types include:
