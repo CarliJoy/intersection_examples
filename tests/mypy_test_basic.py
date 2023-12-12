@@ -1,23 +1,26 @@
-from typing import Any, Protocol, cast, reveal_type
-
 import pytest
 
 from intersection_examples import Intersection
 
 
 @pytest.mark.mypy_testing
-def test_class_intersect():
-    class A(str):
+def test_function_args():
+    class A:
         a: str
 
-    class B(float):
+    class B:
         b: str
 
-    AB = Intersection[A, B]
+    class C(A, B):
+        pass
 
-    class AB_proto(Protocol):
-        a: str
-        b: str
+    class D(A):
+        pass
 
-    print(reveal_type(AB))  # R: object
-    print(reveal_type(AB_proto))  # R: def () -> mypy_test_basic.AB_proto@16
+    def func1(arg: Intersection[A, B]) -> None:
+        return None
+
+    func1(C())  # Valid
+    func1(A())  # E: Argument 1 to "func1" has incompatible type "A"; expected "A & B"
+    func1(B())  # E: Argument 1 to "func1" has incompatible type "B"; expected "A & B"
+    func1(D())  # E: Argument 1 to "func1" has incompatible type "D"; expected "A & B"
