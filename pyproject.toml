@@ -7,8 +7,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-basedmypy = {git = "git@github.com:KotlinIsland/basedmypy.git"}
 typing-protocol-intersection = "^0.3.9"
+basedmypy = "^2.3.0"
+pytest-mypy-testing = {git = "git@github.com:dreamingspires/pytest-mypy-testing.git"}
 
 
 [tool.poetry.group.dev.dependencies]

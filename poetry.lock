@@ -2,29 +2,50 @@
 
 [[package]]
 name = "basedmypy"
-version = "2.3.0+dev.1b1c43a82d3ac9a487af51550c8d412bdd3228c9"
+version = "2.3.0"
 description = "Based static typing for Python"
 optional = false
 python-versions = ">=3.8"
-files = []
-develop = false
+files = [
+    {file = "basedmypy-2.3.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:c38ea60a186ec5b4e5800c6b30f0d27d907eaf025a647c5d376c6e12b85dadde"},
+    {file = "basedmypy-2.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:19f21c43cfe4e8617410a7460863477a1be35b6125b80cc767c1aa1df148de0c"},
+    {file = "basedmypy-2.3.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:70b6b752f40e1d21e17500cf8041cd756d430b82cbf4ffce1f1b5b46593f8ce1"},
+    {file = "basedmypy-2.3.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:32da5239645abc17c2773becb6e42bfebf63134ac31db528906e7e7e8ed7067c"},
+    {file = "basedmypy-2.3.0-cp310-cp310-win_amd64.whl", hash = "sha256:c3636e8d5a61124f2c2a262294ca0d97cc19245a677115ad99b90724087e6443"},
+    {file = "basedmypy-2.3.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:b40542cce22b9b84d59631f1c09556b82bc6ca96f075a527390055154b1197b3"},
+    {file = "basedmypy-2.3.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:47e5d1529eccd3d890c66c69f75601d629d2402334d729c94ab4a34dfde250d2"},
+    {file = "basedmypy-2.3.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d01ebdbc8c0fe55d4493388d00802fa46a8f9a131ab98fa8d068de599f09d484"},
+    {file = "basedmypy-2.3.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:5b882c8ccf24f3fb4df6c61357e58837dbfef177b235f818a5b258f41ff5b67e"},
+    {file = "basedmypy-2.3.0-cp311-cp311-win_amd64.whl", hash = "sha256:bc90c2b54c7948866699ffb7800c309f3d94ff6174b507ea63d775873a35b63e"},
+    {file = "basedmypy-2.3.0-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:d2a11517384ef58ac02cea60939ee8db9b948c3a19209d811ccd389ce229da32"},
+    {file = "basedmypy-2.3.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:6e8a3db700f6296ec4fdb3565c8f222d53f7e0f5756eec68ef42303862b8e5e0"},
+    {file = "basedmypy-2.3.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95507d9f9c93b378f88990efba35a46ad99ff1452f4dae76cec87ab17212ef31"},
+    {file = "basedmypy-2.3.0-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:a19e0cba3573e9f4d3d8f59162e1412d8523fd10e250b53f28907367ec2372c9"},
+    {file = "basedmypy-2.3.0-cp312-cp312-win_amd64.whl", hash = "sha256:42cbad82650345b41f13d7a5d86141502c8384f13bcab087550d6cfb5f66fdfb"},
+    {file = "basedmypy-2.3.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:63d3621016dbfd568e464139326eb929532d18c597d6a6033c3f3f45c16f527c"},
+    {file = "basedmypy-2.3.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:8e69209909e454b42cd9337af89ad401207dc3dd315a180e3cc3e3905372d297"},
+    {file = "basedmypy-2.3.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:96f3f5bfb767b8110345e3c9b1122fc1841433b623fea7849c7ddfdaf82276fd"},
+    {file = "basedmypy-2.3.0-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:808309efb6a09004b1fe58eddcb337ba68c42a8cf0accda890d0dea203947f87"},
+    {file = "basedmypy-2.3.0-cp38-cp38-win_amd64.whl", hash = "sha256:b9847cc608b4581c1ff8d2364ca0afc014bc222f86d6f06645488352469a25b8"},
+    {file = "basedmypy-2.3.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:4109fad62459ecbd88097d8e5340afeda400ace34586c44d87d09b668f9d44d0"},
+    {file = "basedmypy-2.3.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:5d8805a62248002ff79ae95c63f06f8df9a18b6d15d2592b843dc351e14be778"},
+    {file = "basedmypy-2.3.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e1a724142bcbfe7dcf863457d100eec98ae9412b12f8422121c1708240f57dbd"},
+    {file = "basedmypy-2.3.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:9fd17acb3eb2da752460442ace69cb71adbb401434724258141770bb97d139fd"},
+    {file = "basedmypy-2.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:1c5d471541a1f33dc6fc5e41876e07c0c42dcc93d400df2ab0abbc6d4e2340e8"},
+    {file = "basedmypy-2.3.0-py3-none-any.whl", hash = "sha256:8e36e6ad996203d3f524afb6c96adc4b33203d94f35ff8703790629f117675ee"},
+    {file = "basedmypy-2.3.0.tar.gz", hash = "sha256:0c4bafc220c65fb75ef6dcf9e44294ec7dbc317e385e96c57e40a8b4eccde4bc"},
+]
 
 [package.dependencies]
 basedtyping = ">=0.0.3"
-mypy_extensions = ">=1.0.0"
-typing_extensions = ">=4.1.0"
+mypy-extensions = ">=1.0.0"
+typing-extensions = ">=4.1.0"
 
 [package.extras]
 dmypy = ["psutil (>=4.0)"]
 install-types = ["pip"]
 mypyc = ["setuptools (>=50)"]
 reports = ["lxml"]
-
-[package.source]
-type = "git"
-url = "git@github.com:KotlinIsland/basedmypy.git"
-reference = "HEAD"
-resolved_reference = "1b1c43a82d3ac9a487af51550c8d412bdd3228c9"
 
 [[package]]
 name = "basedtyping"
@@ -64,13 +85,13 @@ files = [
 
 [[package]]
 name = "distlib"
-version = "0.3.7"
+version = "0.3.8"
 description = "Distribution utilities"
 optional = false
 python-versions = "*"
 files = [
-    {file = "distlib-0.3.7-py2.py3-none-any.whl", hash = "sha256:2e24928bc811348f0feb63014e97aaae3037f2cf48712d51ae61df7fd6075057"},
-    {file = "distlib-0.3.7.tar.gz", hash = "sha256:9dafe54b34a028eafd95039d5e5d4851a13734540f1331060d31c9916e7147a8"},
+    {file = "distlib-0.3.8-py2.py3-none-any.whl", hash = "sha256:034db59a0b96f8ca18035f36290806a9a6e6bd9d1ff91e45a7f172eb17e51784"},
+    {file = "distlib-0.3.8.tar.gz", hash = "sha256:1530ea13e350031b6312d8580ddb6b27a104275a31106523b8f123787f494f64"},
 ]
 
 [[package]]
@@ -219,6 +240,25 @@ pluggy = ">=0.12,<2.0"
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-mypy-testing"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.11"
+files = []
+develop = false
+
+[package.dependencies]
+basedmypy = "^2.3.0"
+pytest = "^7.4.3"
+
+[package.source]
+type = "git"
+url = "git@github.com:dreamingspires/pytest-mypy-testing.git"
+reference = "HEAD"
+resolved_reference = "daadbc891c305dac4895088d3d296e740b673f99"
+
+[[package]]
 name = "pyyaml"
 version = "6.0.1"
 description = "YAML parser and emitter for Python"
@@ -338,4 +378,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "bfcec73a460578a88e309597c7ce4d4b4a1f12773b726c9b664089ec43a6c781"
+content-hash = "bef42260e66b8e22eb6a1e73c1ee196ed4e99bcc8e1b49cfdceb3ba765e22e46"
