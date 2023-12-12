@@ -17,3 +17,20 @@ def test_class_intersect():
         b: str
 
     assert get_type_hints(AB) == get_type_hints(AB_proto)
+
+
+def test_differing_methods():
+    class A:
+        def foo(self, a: int) -> str:
+            ...
+
+    class B:
+        def foo(self, a: int) -> int:
+            ...
+
+    class AB_proto(Protocol):
+        pass
+
+    AB = Intersection[A, B]
+
+    assert get_type_hints(AB) == get_type_hints(AB_proto)

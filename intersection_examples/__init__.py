@@ -16,7 +16,14 @@ def get_type_hints(
         args = get_args(obj)
         new_type_hints = {}
         for arg in args:
-            new_type_hints.update(get_type_hints(arg))
+            new_type_hints.update(
+                get_type_hints(
+                    arg,
+                    globalns=globalns,
+                    localns=localns,
+                    include_extras=include_extras,
+                )
+            )
         return new_type_hints
     else:
         return get_type_hints_old(
