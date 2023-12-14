@@ -1,5 +1,5 @@
 # intersection_examples
-Python Typing Intersection examples and an [initial specification](./specification.rst) intended to be used within a later PEP.
+Python Typing Intersection examples and an [initial specification](./docs/specification.rst) intended to be used within a later PEP.
 
 The issues in this repo shall streamline the original https://github.com/python/typing/issues/213 issue.
 
