@@ -663,5 +663,6 @@ Reference Implementation
 ========================
 [Link to any existing implementation and details about its state, e.g. proof-of-concept.]
 
-https://github.com/Ovsyanka83/type-intersections
-https://github.com/KotlinIsland/basedmypy/commit/8990b08f6e3a15bf80597c66343ba2cbe41148bd
+- CPython: https://github.com/tomasr8/cpython/tree/intersection-type
+- Naive implementation based on subclasses: https://github.com/Ovsyanka83/type-intersections
+- A type checker implementation: A https://github.com/KotlinIsland/basedmypy/commit/8990b08f6e3a15bf80597c66343ba2cbe41148bd
