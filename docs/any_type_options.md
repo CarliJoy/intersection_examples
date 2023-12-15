@@ -41,7 +41,7 @@ z.bar() # also fine, although type of return is unknown in bar
 ```
 
 # 3. T & Any is an error
-### correct, maybe a little restrictive
+### correct, maybe a little restrictive. However, impossible due to being used internally by type checkers. Intersections with any will happen where type:ignore can't be used, so we need to handle them.
 ```py
 z = Test.foo(x = y) # We get an error here.
 ```
