@@ -10,5 +10,8 @@ class A:
         return random.random()
 
 
+T = TypeVar("T")
+
+
 def class_merger(cls: type[T], name: str) -> type[Intersection[T, A]]:
     return type(name, (cls, A), {})
