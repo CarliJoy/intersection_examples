@@ -90,16 +90,14 @@ class Intersection:
         possible_signatures = set()
         for i in self.__intersects__:
             if hasattr(i, name) and callable(getattr(i, name)):
-                method = getattr(i, name)
-                for overload in get_possible_methods(method):
+                for overload in get_possible_methods(getattr(i, name)):
                     possible_signatures.add(format(signature(overload)))
 
-        if len(possible_signatures) == 0:
-            pass
-        elif len(possible_signatures) == 1:
+        if len(possible_signatures) == 1:
             return next(iter(possible_signatures))
-        else:
+        elif len(possible_signatures) > 1:
             return "Overload[" + ", ".join(possible_signatures) + "]"
+
         if Any in self.__intersects__:
             return Any
         raise AttributeError(f"Attribute not found on type {self}")
