@@ -4,8 +4,18 @@ The idea of this is to simulate the return type of an intersection of two classe
 This currently only works for direct methods or attributes of the class.
 """
 
-from inspect import Parameter, Signature, signature
-from typing import Any, Callable, Sequence, get_args, get_origin, get_overloads
+from inspect import Signature
+from inspect import signature as sig_func
+from typing import (
+    Any,
+    Callable,
+    Self,
+    Sequence,
+    cast,
+    get_args,
+    get_origin,
+    get_overloads,
+)
 
 
 def include_sig(new_sig: Signature, existing_sigs: list[Signature]) -> list[Signature]:
@@ -84,11 +94,12 @@ base_types = (
 )
 
 
-class Intersection:
+class Intersection(Any):
     __intersects__: set[type[object]]
     __signatures__: dict[str, list[Signature]]
     __callables__: Sequence[Callable]
     __inter_annotations__: dict[str, type]
+    __dict__: Any
 
     def __init__(self, *intersects: type[object]) -> None:
         self.__intersects__ = set(reversed(intersects))
@@ -102,6 +113,9 @@ class Intersection:
                     )
         self.__signatures__, self.__callables__ = self._get_signatures()
         self.__inter_annotations__ = self._get_annotations()
+
+    def __new__(cls, *args, **kwargs) -> Self:
+        return super().__new__(cls)
 
     def __class_getitem__(cls, key):
         return cls(*key)
@@ -126,7 +140,7 @@ class Intersection:
         callables: list[Callable] = []
         for i in self.__intersects__:
             try:
-                is_callable = issubclass(get_origin(i), Callable)
+                is_callable = issubclass(cast(Any, get_origin(i)), Callable)
             except:
                 is_callable = False
 
@@ -136,7 +150,7 @@ class Intersection:
                 for method_name in dir(i):
                     method = getattr(i, method_name)
                     if callable(method) and method_name not in excluded_methods:
-                        new_sigs = [signature(i) for i in get_possible_methods(method)]
+                        new_sigs = [sig_func(i) for i in get_possible_methods(method)]
                         for new_sig in new_sigs:
                             if method_name in signatures:
                                 signatures[method_name] = include_sig(
