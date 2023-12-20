@@ -40,11 +40,39 @@ def get_possible_methods(method: Callable) -> list[Callable]:
         return overloads
 
 
+base_types = (
+    int,
+    float,
+    str,
+    bytes,
+    bytearray,
+    bool,
+    type,
+    BaseException,
+    set,
+    list,
+    tuple,
+    range,
+    memoryview,
+    dict,
+    frozenset,
+    complex,
+)
+
+
 class Intersection:
     __intersects__: set[type[object]]
 
     def __init__(self, *intersects: type[object]) -> None:
         self.__intersects__ = set(reversed(intersects))
+        for i in self.__intersects__:
+            if not hasattr(i, "mro"):
+                raise ValueError(f"mro not found for {i}")
+            for base_type in base_types:
+                if base_type in i.mro():
+                    raise TypeError(
+                        f"Type {i} found to derive from base type {base_type}"
+                    )
         self._test_lsp()
 
     def __class_getitem__(cls, key):
@@ -55,14 +83,15 @@ class Intersection:
         signatures: dict[str, list[Signature]] = {}
         for i in self.__intersects__:
             # Resolve basic annotations, ensuring no clashes
-            for annotation_name, annotation_type in i.__annotations__.items():
-                if annotation_name in intersected_attrs:
-                    if annotation_type != intersected_attrs[annotation_name]:
-                        raise TypeError(
-                            f"Attribute {annotation_name} has type clash on {annotation_type} vs {intersected_attrs[annotation_name]}"
-                        )
-                else:
-                    intersected_attrs[annotation_name] = annotation_type
+            if hasattr(i, "__annotations__"):
+                for annotation_name, annotation_type in i.__annotations__.items():
+                    if annotation_name in intersected_attrs:
+                        if annotation_type != intersected_attrs[annotation_name]:
+                            raise TypeError(
+                                f"Attribute {annotation_name} has type clash on {annotation_type} vs {intersected_attrs[annotation_name]}"
+                            )
+                    else:
+                        intersected_attrs[annotation_name] = annotation_type
 
             for method_name in dir(i):
                 method = getattr(i, method_name)
