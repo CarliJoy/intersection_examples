@@ -5,7 +5,7 @@ This currently only works for direct methods or attributes of the class.
 """
 
 from inspect import Signature, signature
-from typing import Any
+from typing import Any, get_overloads
 
 
 def signatures_compatible(s1: Signature, s2: Signature):
@@ -54,14 +54,21 @@ class Intersection:
             for method_name in dir(i):
                 method = getattr(i, method_name)
                 if callable(method) and method_name not in excluded_methods:
-                    new_sig = signature(method)
-
-                    if method_name in signatures:
-                        signatures[method_name] = include_sig(
-                            new_sig, signatures[method_name]
-                        )
+                    try:
+                        overloads = get_overloads(method)
+                    except:
+                        overloads = []
+                    if len(overloads) == 0:
+                        new_sigs = [signature(method)]
                     else:
-                        signatures[method_name] = [new_sig]
+                        new_sigs = [signature(i) for i in overloads]
+                    for new_sig in new_sigs:
+                        if method_name in signatures:
+                            signatures[method_name] = include_sig(
+                                new_sig, signatures[method_name]
+                            )
+                        else:
+                            signatures[method_name] = [new_sig]
 
     def __repr__(self) -> str:
         attrs = list(i.__name__ for i in self.__intersects__)
@@ -74,19 +81,23 @@ class Intersection:
             if name in i.__annotations__:
                 return i.__annotations__[name]
 
-        possible_signatures = set(
-            [
-                format(signature(getattr(i, name)))
-                for i in self.__intersects__
-                if hasattr(i, name) and callable(getattr(i, name))
-            ]
-        )
+        possible_signatures = set()
+        for i in self.__intersects__:
+            if hasattr(i, name) and callable(getattr(i, name)):
+                method = getattr(i, name)
+                overloads = get_overloads(method)
+                if len(overloads) == 0:
+                    possible_signatures.add(format(signature(method)))
+                else:
+                    for overload in overloads:
+                        possible_signatures.add(format(signature(overload)))
+
         if len(possible_signatures) == 0:
             pass
         elif len(possible_signatures) == 1:
             return next(iter(possible_signatures))
         else:
-            return "Overload[" + ",".join(possible_signatures) + "]"
+            return "Overload[" + ", ".join(possible_signatures) + "]"
         if Any in self.__intersects__:
             return Any
         raise AttributeError(f"Attribute not found on type {self}")
