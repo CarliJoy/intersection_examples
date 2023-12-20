@@ -5,7 +5,7 @@ This currently only works for direct methods or attributes of the class.
 """
 
 from inspect import Signature, signature
-from typing import Any, get_overloads
+from typing import Any, Callable, get_overloads
 
 
 def signatures_compatible(s1: Signature, s2: Signature):
@@ -29,6 +29,17 @@ excluded_methods = ["__class__", "__init_subclass__", "__subclasshook__", "__new
 get_attribute_excludes = ["__intersects__", "_test_lsp"]
 
 
+def get_possible_methods(method: Callable) -> list[Callable]:
+    try:
+        overloads = get_overloads(method)
+    except:
+        overloads = []
+    if len(overloads) == 0:
+        return [method]
+    else:
+        return overloads
+
+
 class Intersection:
     __intersects__: set[type[object]]
 
@@ -47,21 +58,16 @@ class Intersection:
             for annotation_name, annotation_type in i.__annotations__.items():
                 if annotation_name in intersected_attrs:
                     if annotation_type != intersected_attrs[annotation_name]:
-                        raise TypeError("LSP Violation")
+                        raise TypeError(
+                            f"Attribute {annotation_name} has type clash on {annotation_type} vs {intersected_attrs[annotation_name]}"
+                        )
                 else:
                     intersected_attrs[annotation_name] = annotation_type
 
             for method_name in dir(i):
                 method = getattr(i, method_name)
                 if callable(method) and method_name not in excluded_methods:
-                    try:
-                        overloads = get_overloads(method)
-                    except:
-                        overloads = []
-                    if len(overloads) == 0:
-                        new_sigs = [signature(method)]
-                    else:
-                        new_sigs = [signature(i) for i in overloads]
+                    new_sigs = [signature(i) for i in get_possible_methods(method)]
                     for new_sig in new_sigs:
                         if method_name in signatures:
                             signatures[method_name] = include_sig(
@@ -85,12 +91,8 @@ class Intersection:
         for i in self.__intersects__:
             if hasattr(i, name) and callable(getattr(i, name)):
                 method = getattr(i, name)
-                overloads = get_overloads(method)
-                if len(overloads) == 0:
-                    possible_signatures.add(format(signature(method)))
-                else:
-                    for overload in overloads:
-                        possible_signatures.add(format(signature(overload)))
+                for overload in get_possible_methods(method):
+                    possible_signatures.add(format(signature(overload)))
 
         if len(possible_signatures) == 0:
             pass
