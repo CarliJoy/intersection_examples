@@ -6,11 +6,9 @@ class A:
         pass
 
 
-class B:
-    def foo(self, x: int) -> int:
+class C:
+    def foo(self, x: str) -> int:
         return 1
 
 
-test = Intersection[A, B]
-print(test)
-print(test.foo)
+test = Intersection[A, C]
