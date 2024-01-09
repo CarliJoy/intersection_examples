@@ -1,4 +1,4 @@
-__all__ = ["Intersection"]
+__all__ = ["IntersectionOp4", "IntersectionOp5"]
 """
 The idea of this is to simulate the return type of an intersection of two classes.
 This currently only works for direct methods or attributes of the class.
@@ -9,6 +9,7 @@ from inspect import signature as sig_func
 from typing import (
     Any,
     Callable,
+    ClassVar,
     Self,
     Sequence,
     cast,
@@ -16,6 +17,7 @@ from typing import (
     get_origin,
     get_overloads,
 )
+from enum import Enum
 
 
 def include_sig(new_sig: Signature, existing_sigs: list[Signature]) -> list[Signature]:
@@ -60,6 +62,7 @@ get_attribute_excludes = [
     "__signatures__",
     "__inter_annotations__",
     "__callables__",
+    "option_type",
 ]
 
 
@@ -94,14 +97,24 @@ base_types = (
 )
 
 
+class OptionType(Enum):
+    option_4 = "option_4"
+    option_5 = "option_5"
+
+
 # Inheritance from Any added to allow type checking to be enabled - attributes of
 # this class are unknown to the type checker.
-class Intersection(Any):
+class IntersectionBase(Any):
     __intersects__: set[type[object]]
     __signatures__: dict[str, list[Signature]]
     __callables__: Sequence[Callable]
     __inter_annotations__: dict[str, type]
     __dict__: Any
+    option_type: ClassVar[OptionType]
+
+    def __init_subclass__(cls, *, option_type: OptionType) -> None:
+        cls.option_type = option_type
+        return super().__init_subclass__()
 
     def __init__(self, *intersects: type[object]) -> None:
         self.__intersects__ = set(reversed(intersects))
@@ -205,18 +218,37 @@ class Intersection(Any):
         if name in get_attribute_excludes:
             return super().__getattribute__(name)
         if name in self.__inter_annotations__:
-            return self.__inter_annotations__[name]
-
-        if name in self.__signatures__:
+            output = self.__inter_annotations__[name]
+        elif name in self.__signatures__:
             possible_signatures = {format(sig) for sig in self.__signatures__[name]}
+            assert len(possible_signatures) > 0
+            if len(possible_signatures) == 1:
+                output = next(iter(possible_signatures))
+            else:
+                output = "Overload[" + ", ".join(possible_signatures) + "]"
         else:
-            possible_signatures = set()
-
-        if len(possible_signatures) == 1:
-            return next(iter(possible_signatures))
-        elif len(possible_signatures) > 1:
-            return "Overload[" + ", ".join(possible_signatures) + "]"
+            output = None
 
         if Any in self.__intersects__:
-            return Any
-        raise AttributeError(f"Attribute not found on type {self}")
+            if self.option_type == OptionType.option_5:
+                if output is None:
+                    return Any
+                else:
+                    return output
+            else:
+                if output is None:
+                    return Any
+                else:
+                    return f"{output} & {Any}"
+        elif output is None:
+            raise AttributeError(f"Attribute not found on type {self}")
+        else:
+            return output
+
+
+class IntersectionOp4(IntersectionBase, option_type=OptionType.option_4):
+    pass
+
+
+class IntersectionOp5(IntersectionBase, option_type=OptionType.option_5):
+    pass

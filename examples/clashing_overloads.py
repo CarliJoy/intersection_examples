@@ -1,4 +1,4 @@
-from intersection_examples import Intersection
+from intersection_examples import IntersectionOp5 as Intersection
 
 
 class A:
