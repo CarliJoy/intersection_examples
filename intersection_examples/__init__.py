@@ -94,6 +94,8 @@ base_types = (
 )
 
 
+# Inheritance from Any added to allow type checking to be enabled - attributes of
+# this class are unknown to the type checker.
 class Intersection(Any):
     __intersects__: set[type[object]]
     __signatures__: dict[str, list[Signature]]
@@ -115,12 +117,26 @@ class Intersection(Any):
         self.__inter_annotations__ = self._get_annotations()
 
     def __new__(cls, *args, **kwargs) -> Self:
+        # Workaround to allow inheritance from Any
         return super().__new__(cls)
 
     def __class_getitem__(cls, key):
+        """
+        Allows for the generation of an instance of Intersection based on
+        a series of types (the expected interface of intersection)
+        """
         return cls(*key)
 
     def _get_annotations(self) -> dict[str, type]:
+        """
+        Get the type annotations associated with the intersection.
+
+        Raises:
+            TypeError: Attribute type clash
+
+        Returns:
+            dict[str, type]: A mapping from annotation name to type.
+        """
         intersected_attrs: dict[str, type] = {}
         for i in self.__intersects__:
             # Resolve basic annotations, ensuring no clashes
@@ -136,6 +152,13 @@ class Intersection(Any):
         return intersected_attrs
 
     def _get_signatures(self) -> tuple[dict[str, list[Signature]], list[Callable]]:
+        """
+        Gets the signatures associated with each attribute, and a
+        list of the associated callables if applicable.
+
+        Returns:
+            tuple[dict[str, list[Signature]], list[Callable]]: Signature mapper, callables
+        """
         signatures: dict[str, list[Signature]] = {}
         callables: list[Callable] = []
         for i in self.__intersects__:
@@ -166,6 +189,19 @@ class Intersection(Any):
         return " & ".join(attrs)
 
     def __getattribute__(self, name: str):
+        """
+        Overrides the default behaviour for get attribute,
+        now returns the type of the attribute rather than the attribute itself.
+
+        Args:
+            name (str): The name of the attribute to obtain
+
+        Raises:
+            AttributeError: Attribute not found
+
+        Returns:
+            _type_: The type of the attribute requested
+        """
         if name in get_attribute_excludes:
             return super().__getattribute__(name)
         if name in self.__inter_annotations__:
