@@ -437,8 +437,8 @@ However, ``Callable[..., Any]`` is also a gradual type.
 for any identifier, as ``SupportsAbs`` does not provide ``__call__``
 (or any of the other things provided by ``Callable``) in an incomaptible way.
 
-There is an additional way to reduce the number of cases where this can matter
-by analyzing *how* type variables can have their corresponding values provided.
+Beyond this, we also have to look at the effects of introducing an unknown
+or partially unknown type through type variables on ambiguity.
 
 For function scoped type variables
 (type checkers do not apply variance to these)
