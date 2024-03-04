@@ -166,7 +166,8 @@ expression would be consistent with all of the type expressions, ``*Ts``.
 Given a value that has a type of ``Intersection[*Ts]``, use of the value is
 consistent with the known type if at least one type in ``*Ts`` provides a
 definition which is consistent, and that the use is consistent with the first
-type in ``*Ts`` which provides a relevent defintion.
+type in ``*Ts`` which provides a relevent defintion. Type checkers MUST ONLY
+check the first relevent definition. (see rationale on ordering)
 
 While this simplifies type checker behavior to allow cachable linear
 short-circuiting complexity, the behavior here was not chosen for this reason,
@@ -260,7 +261,8 @@ It was observed that by introducing an ordering on one direction of the
 consistency checks, that for all of the anticipated cases involving fully typed
 code, the desired behavior from the type system for motivating cases worked as
 intended, and that for the case of ``Any & T``, it matched the behavior of
-subclassing of ``Any``.
+subclassing of ``Any``, and that any issue of LSP violating types was already
+handled by the errors one would get if attempting to create an invalid type.
 
 While the pure and unordered form would be identical for the vast majority of
 cases we expect users of fully typed code to encounter, The combination of the
@@ -336,7 +338,18 @@ None
 How to Teach This
 =================
 
-TODO, comparisons to sets with union, comparisons using builtins (any, all)
+At the most universal level, Intersections just express that a value must
+be consistent with all of the types of the Intersection.
+This is a clear parallel to Unions, which express that a value must be
+consistent with one of the types of the Union.
+
+When teaching and documenting the edge cases that involve what happens when
+using a value that involves diamond patterns, we reccoemend drawing a parallel
+to MRO, as well as reccomending that library authors avoid creating an
+expectation that users be the one to solve a diamond pattern created by a
+library when possible. There may always be advanced use-cases where doing so is
+not possible; However, users finding themselves in this situation will need to
+understand MRO to resolve them, and the ordering in use here matches that.
 
 
 Reference Implementation
@@ -383,7 +396,7 @@ is available if anyone solves the issues.
 Using ``&`` may be a significantly stronger blocker on pure intersections
 
 This was a direction given serious consideration, however the
-ergonomic benefits of ``&`` are substantial, ``OrderedIntersection``
+ergonomic benefits of ``&`` are substantial and ``OrderedIntersection``
 being as long and verbose as it is will impact readability of complex
 type signatures.
 
