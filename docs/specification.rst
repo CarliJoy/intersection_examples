@@ -133,7 +133,7 @@ This adds a type form to the ``typing`` module named ``Intersection``
 and implements ``__and__`` for ``builtins.type``. ``Intersection`` is a type
 form (todo defintion) that can be parametrized with with type expressions.
 
-This exands the allowed use of ``typing.Self`` (hereafter ``Self``) for type
+This expands the allowed use of ``typing.Self`` (hereafter ``Self``) for type
 expressions that refer to the bound value of an instance method or classmethod
 to include intersections that contain ``Self``. It is not valid to create an
 instance of a type containing such an annotation without the other operands
