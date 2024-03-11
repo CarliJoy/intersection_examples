@@ -58,7 +58,8 @@ For example,
     fu(D())  # Valid
 
 Intersection types provide a different (complementary) way of combining types.
-The type expression ``A & B`` describes values which are consistent with both type ``A`` and type ``B``.
+The type expression ``A & B`` describes values that are consistent with both
+type ``A`` and type ``B``.
 
 For example,
 
@@ -71,8 +72,8 @@ For example,
     fi(C())  # Valid
     fi(D())  # Invalid
 
-here it is valid to call ``fi`` on an instance of ``C``, but invalid to call it with instances of
-``A``, ``B`` or ``D``.
+here it is valid to call ``fi`` on an instance of ``C``, but invalid to call it
+with instances of ``A``, ``B`` or ``D``.
 
 Motivation
 ==========
@@ -87,9 +88,9 @@ This allows
 Mixins
 ------
 
-Mixin classes often have to assume a certain API, which is not implemented by the mixin, but needs
-to be available in the class hierarchy where the mixin is used.
-For example,
+Mixin classes often have to assume a certain API, which is not implemented by
+the mixin but needs to be available in the class hierarchy where the mixin is
+used. For example,
 
 ::
 
@@ -97,15 +98,15 @@ For example,
         def dispatch(self, request, *args, **kwargs):
             if not request.user.is_authenticated:
                 # calling a method of `AccessMixin`
-        	    return self.handle_no_permission()  # Valid
+              return self.handle_no_permission()  # Valid
             # calling a method of `View`
             return super().dispatch(request, *args, **kwargs)  # Invalid
             #              ^^^^^^^^ Cannot access member "dispatch" for type "AccessMixin"
             #                         Member "dispatch" is unknown
 
-The ``LoginRequiredMixin`` is designed to be used with the ``View`` base class which defines the
-``dispatch`` method.
-Intersection types allow expressing that directly via
+The ``LoginRequiredMixin`` is designed to be used with the ``View`` base class
+which defines the ``dispatch`` method. Intersection types allow expressing that
+directly via
 
 ::
 
@@ -115,7 +116,7 @@ Intersection types allow expressing that directly via
         def dispatch(self: Self & View, request, *args, **kwargs):
             if not request.user.is_authenticated:
                 # calling a method of `AccessMixin`
-        	    return self.handle_no_permission()  # Valid
+              return self.handle_no_permission()  # Valid
             # calling a method of `View`
             return super().dispatch(request, *args, **kwargs)  # Valid
 
@@ -131,14 +132,14 @@ Specification
 
 This adds a type form to the ``typing`` module named ``Intersection``
 and implements ``__and__`` for ``builtins.type``. ``Intersection`` is a type
-form (todo defintion) that can be parametrized with with type expressions.
+form (todo definition) that can be parametrized with type expressions.
 
 This expands the allowed use of ``typing.Self`` (hereafter ``Self``) for type
 expressions that refer to the bound value of an instance method or classmethod
 to include intersections that contain ``Self``. It is not valid to create an
-instance of a type containing such an annotation without the other operands
-of the intersection being consistent.
-(see Mixins in motivations for a practical example)
+instance of a type containing such an annotation without the other operands of
+the intersection being consistent.
+(see Mixins in Motivations for a practical example)
 
 
 Type system behavior
@@ -147,52 +148,52 @@ Type system behavior
 (TODO: define or link to definitions of type expression and value expression)
 
 ``A & B`` is short-hand for ``Intersection[A, B]``. ``Intersection`` is still
-needed when considering typevariable tuples.
+needed when considering type variable tuples.
 
 An unparameterized ``Intersection`` as a type expression must be considered an
 error by type checkers. It is possible to end up with an ``Intersection``
 that has been parameterized but is empty. This can happen in the case of type
-variable tuples. An empty intersection as a type expression is equilvant to
+variable tuples. An empty intersection as a type expression is equal to
 ``typing.Never``.
 
 An unparameterized ``Intersection`` as a value expression is not a type error,
-but may not be possible to provide a meaningful type for at this time, see
-below section on runtime typechecking support.
+but may not be possible to provide a meaningful type at this time, see
+below section on runtime type-checking support.
 
 Given an ``Intersection[*Ts]`` as a type expression, a corresponding value
 expression is considered to be consistent with it if and only if the value
 expression would be consistent with all of the type expressions, ``*Ts``.
 
-Given a value that has a type of ``Intersection[*Ts]``, use of the value is
+Given a value that has a type of ``Intersection[*Ts]``, the use of the value is
 consistent with the known type if at least one type in ``*Ts`` provides a
-definition which is consistent, and that the use is consistent with the first
-type in ``*Ts`` which provides a relevent defintion. Type checkers MUST ONLY
-check the first relevent definition. (see rationale on ordering)
+consistent definition, and the use is consistent with the first type in ``*Ts``
+which provides a relevant definition. Type checkers MUST ONLY check the first
+relevant definition. (see rationale on ordering)
 
 While this simplifies type checker behavior to allow cachable linear
 short-circuiting complexity, the behavior here was not chosen for this reason,
-see rationale section for more details.
+see the rationale section for more details.
 
 Though it was not chosen for this quality, the potentially superlinear
 complexity of some other potential semantics should be kept in mind by anyone
 considering changing the semantics in the future as this may be a barrier
-to usefulness of implementations.
+to the usefulness of implementations.
 
 Type-Checkers that are interested in providing tuning knobs for strictness
-MAY provide additional confiurable warnings for certain patterns with
+MAY provide additional configurable warnings for certain patterns with
 intersections that could cause ambiguity regarding gradual typing.. (see below)
 
 
 Composability within the type system
 ------------------------------------
 
-``Intersection`` does not forbid any incompatability of type parameters
-(Neither statically or at runtime). It is unforseeable if other types or
-special forms could be changed to be compatible with eachother in the future.
+``Intersection`` does not forbid any incompatibility of type parameters
+(Neither statically or at runtime). It is unforeseeable if other types or
+special forms could be changed to be compatible with each other in the future.
 
-It is sufficient to detect the incompatability at time of assignment when a
+It is sufficient to detect the incompatibility at the time of assignment when a
 value expression cannot be formed which is consistent with multiple
-incompatablec type expressions, as the creation of a type to have an instance
+incompatible type expressions, as the creation of a type to have an instance
 of as a value should itself produce the appropriate error if impossible prior
 to an attempt to create an instance to use for assignment.
 
@@ -205,38 +206,38 @@ Runtime specification behavior
 
 At runtime, ``Intersection[*Ts]`` and ``TypeOne & TypeTwo`` each create an
 object which can be introspected consistent with the methods provided for type
-introspection in ``typing`` such as, but not limited to ``get_origin``
+introspection in ``typing`` such as, but not limited to ``get_origin``.
 
 
-Runtime type checking considerations
+Runtime type-checking considerations
 ------------------------------------
 
-At this point in time, ``Intersection`` as a value expression is only
+`Intersection`` as a value expression is only
 consistent with a type expression of ``object``, ``Any``, and a few internal
 types that should not be publically used.
 
-This is not a binding limitation on Intersection, and future PEPs which provide
-ways to type methods which do runtime introspection should treat this the same
+This is not a binding limitation on Intersection and future PEPs which provide
+ways to type methods that do runtime introspection should treat this the same
 as other parameterizable type forms which exist to express typing concepts
-and not to express a specific indivudal runtime type.
+and not to express a specific individual runtime type.
 
 
-Optional checks which are not strictly about correctness
+Optional checks that are not strictly about correctness
 ========================================================
 
 Type checkers and/or linters may decide to provide opinionated rules.
 A few anticipated ones are listed below.
 
 Type checkers and linters MAY provide any of these or others but MUST NOT
-use these rules to treat libraries which have not opted into these checks as
-being in-error. The cases these detect have validity, but also have sharp edges
-that some users may choose to want to avoid in their own code.
+use these rules to treat libraries that have not opted in to these checks as
+being in error. The cases these detect have validity, but also have sharp edges
+that some users may choose to want to avoid in their code.
 
 
 Allowing avoiding unintentional ambiguity with gradual types
 ------------------------------------------------------------
 
-- Users may wish to ban ``Any`` or gradual types in intsersections.
+- Users may wish to ban ``Any`` or gradual types in intersections.
 - Users may wish to enforce that Gradual types are ordered after
   non-gradual types in intersections
 - Detecting cases where non-disjoint use could introduce ordering concerns
@@ -245,11 +246,10 @@ Allowing avoiding unintentional ambiguity with gradual types
 Rationale
 =========
 
-Outside of the fact that we are specifying the intersections should be ordered
-in python, very little about this should be surprising. The ordering allows
-for allowing developer choice in resolving ambiguity, and comes with
-a side-effect of allowing linear complexity when evaluating
-intersections by type checkers
+Outside of the fact that we are specifying that intersections should be ordered
+in Python, very little about this should be surprising. The ordering allows for
+developer choice in resolving ambiguity and comes with the side-effect of
+allowing linear complexity when evaluating intersections by type checkers.
 
 As ordering of an intersection has the potential to be controversial,
 the below summarizes what was explored and the various tradeoffs
@@ -257,7 +257,7 @@ the below summarizes what was explored and the various tradeoffs
 Ordering
 --------
 
-It was observed that by introducing an ordering on one direction of the
+It was observed that by introducing an ordering to one direction of the
 consistency checks, that for all of the anticipated cases involving fully typed
 code, the desired behavior from the type system for motivating cases worked as
 intended, and that for the case of ``Any & T``, it matched the behavior of
@@ -266,7 +266,7 @@ handled by the errors one would get if attempting to create an invalid type.
 
 While the pure and unordered form would be identical for the vast majority of
 cases we expect users of fully typed code to encounter, The combination of the
-definition of  ``Any`` doubling for both compatability and uncertainty creates
+definition of  ``Any`` doubling for both compatibility and uncertainty creates
 a situation where it cannot be excluded from such an intersection, and that
 none of the possible interpretations of it are likely to be satisfying for all
 users.
@@ -275,40 +275,40 @@ There are a few potential unordered interpretations of ``Any & T``
 (for this section, where T is a non-gradual type).
 The one which was found to be most consistent with existing definitions in the
 type system could not reduce this to either ``Any`` or ``T``, but would still,
-to users of a type ``Any & T`` be identical to ``Any``. This would lead to a
+to users of a type ``Any & T`` be identical to ``Any``. This would lead to
 significant increases in false negatives interacting with gradual typing.
 
 Banning ``Any`` from intersections to prevent this edge case would create
 significant complications for untyped imports, unbound type variables, and the
-general purpose intent of ``Any`` as a means of compatability in the framework
+general purpose intent of ``Any`` as a means of compatibility in the framework
 of gradual typing.
 
 Other considered ways of resolving this in particular was to reword ``Any``'s
-compatability to be more flexible, and treat it as always yielding to a known
+compatibility to be more flexible, and treat it as always yielding to a known
 implementation; However, this would increase the complexity of ``Any``, as well
 as create situations where diamond patterns *may* have been resolved, but the
-type system would not know, leading to increased un-typable false-positives.
+type system would not know, leading to increased un-typable false positives.
 
 Choosing to err on the side of False positives would be better for those
-wanting the immediate feedbacks on type safety in an IDE that many users have
+wanting immediate feedback on type safety in an IDE that many users have
 attributed to productiveness.
 
 Choosing to err on the side of false negatives would be more in line with the
-definition of compatability provided by ``Any``
+definition of compatibility provided by ``Any``.
 
 Since an unordered intersection can create an erosion of the barrier between
 typed an untyped code, no longer coercing from one to another, but being
 possible to mix and match, it is predictable that making a decision either way
-on this would to lead to increased friction between typed and untyped code, and
+on this would lead to increased friction between typed and untyped code, and
 increase pressure to more fully type code or to treat code that still can't be
 expressed by the type, but which needed to interact with typed code as taboo.
 
-The ordering allows expressing preferring either the False positives for the
-implied possible diamond pattern with untyped things (``T & Any``) and a narrow
+The ordering allows expressing preferring either the False positives or the
+implied possible diamond pattern with untyped things (``T & Any``) and a narro
 remedy for it (``P & T & Any``) where ``P`` is a protocol expressing how the
-diamond pattern was actually resolved.
+diamond pattern was resolved.
 
-The ordering also allows expressing prefering not to get warnings for the
+The ordering also allows expressing preferring not to get warnings for the
 implied possible diamond pattern: (``Any & T``)
 
 Neither of these provide warnings for things not provided by ``T``, the scope
@@ -316,17 +316,17 @@ of the ordering mattering is only in the overlap.
 
 (TODO add table comparing effects of each option in each of meaningful cases, highlighting the equivalence to unordered in most cases)
 
-Backwards Compatibility
+Backward Compatibility
 =======================
 
-This PEP expands the allowed use of ``Self`` to better handle mixins,
-this change is not done in a backwards incompatible manner.
+This PEP expands the allowed use of ``Self`` to better handle mixins, this
+change is not done in a backward incompatible manner.
 
 The implementation of ``__and__`` for the builtin ``type`` may result in
-runtime uses of type introspection to misbehave for user defined types using
-a metaclass which defines ``__and__`` for some purpose.
+runtime uses of type introspection to misbehave for user-defined types that
+define a metaclass which defines ``__and__`` for some purpose.
 
-The considerations are similar to the prior implementing of ``|`` for types.
+The considerations are similar to the prior implementation of ``|`` for types.
 
 
 Security Implications
@@ -344,10 +344,10 @@ This is a clear parallel to Unions, which express that a value must be
 consistent with one of the types of the Union.
 
 When teaching and documenting the edge cases that involve what happens when
-using a value that involves diamond patterns, we reccoemend drawing a parallel
-to MRO, as well as reccomending that library authors avoid creating an
-expectation that users be the one to solve a diamond pattern created by a
-library when possible. There may always be advanced use-cases where doing so is
+using a value that involves diamond patterns, we recommend drawing a parallel
+to MRO, as well as recommending that library authors avoid creating
+the expectation that users be the ones to solve a diamond pattern created by a
+library when possible. There may always be advanced use cases where doing so is
 not possible; However, users finding themselves in this situation will need to
 understand MRO to resolve them, and the ordering in use here matches that.
 
@@ -360,25 +360,26 @@ TODO
 Comparison to other languages
 =============================
 
-When comparing what other languages with intersections, most do not provide an
-intersection type.
+When looking at what other languages have done, many do not have intersection
+types. Of those that do, the two closest comparisons to the desired behavior as
+well as the existing type features were found in Kotlin and TypeScript.
+Evaluating these comparisons reinforced the decision to include an ordering.
 
-Two notable comparisons with languages that do reinforce the decision to
-include ordering.
-
-While Kotlin (unlike Java) allows multiple inheritence, it does not allow a
-diamond pattern to exist, allowing only one base to implement a defintion for
+While Kotlin (unlike Java) allows multiple inheritance, it does not allow a
+diamond pattern to exist, allowing only one base to implement a definition for
 a method or attribute of a type. Kotlin's intersections therefore do not have
-to consider non-disjoint intersections.
+to consider non-disjoint intersections. Kotlin's intersection types are not
+currently user-denotable and instead are possible either at runtime with
+smart-casting or at compile time, indirectly via multiple type constraints.
 
 TypeScript treats an intersection containing Any to be Any.
 This makes sense given that TypeScript only has structural typing
-but does not map well into python when considering nominal subtyping, and
+but this does not map well into Python when considering nominal subtyping, and
 ``Any & T`` (Where ``T`` is a non-gradual type) as a return type.
 
-Additionally, For the case of non-disjoint intersections TypeScript does not
-synthesize a minimum bound, but instead picks an arbitrary winner with an
-undocumented sort. This is not ideal for python, but when considering only
+Additionally, In the case of non-disjoint intersections, TypeScript does not
+synthesize a minimum bound but instead picks an arbitrary winner with an
+undocumented sort. This is not ideal for Python, but when considering only
 structural typing, and with the availability of TypeScript's ``Pick`` and
 ``Omit``, it appears to be a non-issue for type expressiveness in TypeScript.
 
@@ -397,19 +398,27 @@ Using ``&`` may be a significantly stronger blocker on pure intersections
 
 This was a direction given serious consideration, however the
 ergonomic benefits of ``&`` are substantial and ``OrderedIntersection``
-being as long and verbose as it is will impact readability of complex
+being as long and verbose as it is will impact the readability of complex
 type signatures.
 
-Additionally, we believe it is unlikely that all of the issues presented for
-an unordered form in the rationale section are solvable in any version of
-python that remains gradually typed, has both structural and nominal subtyping,
-and allows for resolvable diamond patterns without adversely affecting the
-needs or ergonomics for some users.
+Additionally, we believe it is unlikely that all of the issues that were
+presented for an unordered form in the rationale section are possible to solve
+in any version of Python that remains gradually typed, has both structural and
+nominal subtyping, and allows for resolvable diamond patterns without adversely
+affecting the needs or ergonomics for some users without adoption of ideas
+which would allow tracking a lower and upper type bound for gradual and
+inferred types through the ideas of set-theoretic typing.
 
-Such a version of python would already likely require a python 4.0,
-allowing revisiting of both the name and operator use.
+Adoption of set-theoretic typing definitions and bounds tracking of gradual
+types within the type system would be a larger change, but would allow for
+removal of the ordering without a seperate ordered construct being needed.
 
-Apendices
+Such a future of Python would require either a 4.0 version or large changes
+isolated to the type system that could be done in a way that encompass multiple
+features of it.
+
+
+Appendices
 =========
 
 A heuristic for non-disjoint use and ordering concerns
@@ -418,29 +427,30 @@ A heuristic for non-disjoint use and ordering concerns
 There is a way to determine where the ordering actually matters.
 
 As stated above, The ordering mattering is valid, but some libraries may want
-to flag it if it comes up in their own code to be sure they are aware of the
-potential sharp edges.
+to flag it if it comes up in their code to be sure they are aware of the
+potentially sharp edges.
 
 A reductive summary of this is that the ordering matters when there is an
 unresolved diamond pattern, and that gradual types in their infinite
-compatability conversely provide infinitely many possible diamond patterns.
+compatability conversely provides infinitely many possible diamond patterns.
 
-While type checkers and linters are free to implement their own heuristics
+While type checkers and linters are free to implement heuristics
 for this which behave differently to better match the actual use cases
-their users have, one set of rules for determining this are as follows:
+their users have,
+one set of rules for determining this is provided for reference:
 
-Given any number of types, if for any identifier defined on any of the types
-there is more than 1 non-exactly equivlaent type specification for that
-identifier amoung the types, the ordering matters.
+Given any number of types, if, for any identifier defined on any of the types,
+there is more than 1 non-exactly equivalent type specification for that
+identifier among the types, the ordering matters.
 
-Any type that is considered to be a gradual type only provides 1 definition
+Any type that is considered to be gradual only provides 1 definition
 for the identifiers it provides, but that 1 definition is not considered to be
-"exactly equvalent" to one provided by a non-gradual type for the purpose of
+"exactly equivalent" to one provided by a non-gradual type for the purpose of
 this heuristic.
 
-For instance, a type which provides a property ``x`` that resolves to ``Any``
+For instance, a type that provides a property ``x`` that resolves to ``Any``
 conflicts with ``Any`` for this check. x is a property returning Any, which is
-more strict than the behavior of ``Any`` when considering substitutability
+more strict than the behavior of ``Any`` when considering substitutability.
 
 This means the inclusion of ``Any`` with a non-Any would be a reason to flag
 under this rule.
@@ -448,25 +458,25 @@ under this rule.
 However, ``Callable[..., Any]`` is also a gradual type.
 ``Callable[..., Any] & SupportsAbs`` does not have multiple definitions
 for any identifier, as ``SupportsAbs`` does not provide ``__call__``
-(or any of the other things provided by ``Callable``) in an incomaptible way.
+(or any of the other things provided by ``Callable``) in an incompatible way.
 
-Beyond this, we also have to look at the effects of introducing an unknown
-or partially unknown type through type variables on ambiguity.
+Beyond this, we also have to look at the effects of introducing an unknown or
+partially unknown type through type variables on ambiguity.
 
-For function scoped type variables
+For function-scoped type variables
 (type checkers do not apply variance to these)
 
 - If the type variable participates in an intersection in a type expression for
   a parameter of the function, the ordering has the potential to matter.
 
-For class scoped type variables as well as intersections as type parameters
+For class-scoped type variables as well as intersections as type parameters
 to generics and typing special forms (i.e. ``type[T & Protocol]``):
 
 - covariant and invariant TypeVariables should only be included if a bound is
   provided, and the provided bound should be used for the check.
 
 - contravariant TypeVariables should be checked using a bound if provided, or
-  otherwise be treated as Any
+  otherwise, be treated as Any
 
 Footnotes
 =========
