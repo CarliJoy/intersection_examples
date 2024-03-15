@@ -11,6 +11,8 @@ typing-protocol-intersection = "^0.3.9"
 basedmypy = "^2.3.0"
 pytest-mypy-testing = {git = "git@github.com:dreamingspires/pytest-mypy-testing.git"}
 numpy = "^1.26.2"
+black = "^23.12.0"
+isort = "^5.13.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -20,6 +22,3 @@ pytest = "^7.4.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pyright]
-typeCheckingMode = "off"
