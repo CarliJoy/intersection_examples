@@ -1,4 +1,4 @@
-from intersection_examples import IntersectionOp5 as Intersection
+from intersection_examples import Intersection
 
 
 class A:
@@ -12,3 +12,4 @@ class C:
 
 
 test = Intersection[A, C]
+print(test.foo)
