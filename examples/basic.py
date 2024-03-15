@@ -1,23 +1,26 @@
-from typing import Any
-
-from intersection_examples import IntersectionOp5 as Intersection
+from intersection_examples import Intersection
 
 
 class A:
     test: int
 
-    def foo(self) -> int:
+    def foo(self, x: str) -> str:
         ...
 
 
 class B:
     test: int
 
-    def foo(self) -> int:
+    def foo(self, x: int) -> int:
         ...
 
 
 test = Intersection[A, B]
+print(test)
+print(test.test)
+print(test.foo)
+print()
+test = Intersection[B, A]
 print(test)
 print(test.test)
 print(test.foo)

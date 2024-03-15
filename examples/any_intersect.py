@@ -1,6 +1,6 @@
 from typing import Any
 
-from intersection_examples import IntersectionOp5, IntersectionOp4
+from intersection_examples import Intersection
 
 
 class A:
@@ -8,12 +8,12 @@ class A:
         ...
 
 
-test_new = IntersectionOp5[A, Any]
+test_new = Intersection[A, Any]
 print(test_new)
-print(test_new.foo)
-print(test_new.x)
-
-test_new = IntersectionOp4[A, Any]
+print("foo", test_new.foo)
+print("x", test_new.x)
+print()
+test_new = Intersection[Any, A]
 print(test_new)
-print(test_new.foo)
-print(test_new.x)
+print("foo", test_new.foo)
+print("x", test_new.x)
