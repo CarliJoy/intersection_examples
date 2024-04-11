@@ -62,8 +62,11 @@ def is_non_structural(cls: object) -> bool:
         bool: True is the class is non-structural
     """
     if (
-        cls == Any or is_protocol(cls) or is_typeddict(cls) or has_origin(cls)
-    ):  # type:ignore
+        cls == Any
+        or is_protocol(cls)  # type:ignore
+        or is_typeddict(cls)
+        or has_origin(cls)
+    ):
         return False
     return True
 
