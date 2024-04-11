@@ -13,13 +13,19 @@ from typing import (
     get_args,
     get_origin,
     get_overloads,
+    is_typeddict,
 )
+from typing_extensions import is_protocol
 
 
-excluded_methods = ["__class__", "__init_subclass__", "__subclasshook__", "__new__"]
 get_attribute_excludes = [
     "__intersects__",
     "__callables__",
+    "__class__",
+    "__init_subclass__",
+    "__subclasshook__",
+    "__new__",
+    "must_subclass",
 ]
 
 
@@ -32,6 +38,34 @@ def get_possible_methods(method: Callable) -> Sequence[Callable]:
         return [method]
     else:
         return overloads
+
+
+def has_origin(cls: object) -> bool:
+    try:
+        orig = get_origin(cls)
+        if orig is not None:
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
+def is_non_structural(cls: object) -> bool:
+    """
+    We wish to determine if the given class is to be considered structural,
+    and be excluded from the inheritance restriction.
+    Args:
+        cls (object): Class to be determined
+
+    Returns:
+        bool: True is the class is non-structural
+    """
+    if (
+        cls == Any or is_protocol(cls) or is_typeddict(cls) or has_origin(cls)
+    ):  # type:ignore
+        return False
+    return True
 
 
 # Inheritance from Any added to allow type checking to be enabled - attributes of
@@ -104,7 +138,7 @@ class Intersection(Any):
                     )
                 else:
                     method = getattr(i, name)
-                    if callable(method) and name not in excluded_methods:
+                    if callable(method):
                         sig_funcs = [sig_func(i) for i in get_possible_methods(method)]
                         if len(sig_funcs) == 1:
                             return sig_funcs[0]
@@ -120,3 +154,17 @@ class Intersection(Any):
                 pass
 
         raise AttributeError(f"Attribute not found on type {self}")
+
+    @property
+    def must_subclass(self) -> tuple[object, ...]:
+        """
+        Returns the classes that this intersection must subclass
+
+        Returns:
+            tuple[object,...]: Classes that must be subclassed in this order
+        """
+        out = []
+        for i in self.__intersects__:
+            if is_non_structural(i):
+                out.append(i)
+        return tuple(out)

@@ -13,3 +13,4 @@ class C:
 
 test = Intersection[A, C]
 print(test.foo)
+print(test.must_subclass)
