@@ -19,8 +19,10 @@ test = Intersection[A, B]
 print(test)
 print(test.test)
 print(test.foo)
+print(test.must_subclass)
 print()
 test = Intersection[B, A]
 print(test)
 print(test.test)
 print(test.foo)
+print(test.must_subclass)

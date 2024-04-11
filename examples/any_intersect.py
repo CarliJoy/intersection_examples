@@ -8,12 +8,14 @@ class A:
         ...
 
 
-test_new = Intersection[A, Any]
-print(test_new)
-print("foo", test_new.foo)
-print("x", test_new.x)
+test = Intersection[A, Any]
+print(test)
+print("foo", test.foo)
+print("x", test.x)
+print(test.must_subclass)
 print()
-test_new = Intersection[Any, A]
-print(test_new)
-print("foo", test_new.foo)
-print("x", test_new.x)
+test = Intersection[Any, A]
+print(test)
+print("foo", test.foo)
+print("x", test.x)
+print(test.must_subclass)

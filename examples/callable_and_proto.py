@@ -10,6 +10,8 @@ class Proto(Protocol):
 
 test = Intersection[Callable[[int, str], int], Proto]
 print(test.__call__)
-
+print(test.must_subclass)
+print()
 test = Intersection[Proto, Callable[[int], int]]
 print(test.__call__)
+print(test.must_subclass)
