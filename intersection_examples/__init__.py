@@ -3,7 +3,7 @@ __all__ = ["Intersection"]
 The idea of this is to simulate the return type of an intersection of two classes.
 This currently only works for direct methods or attributes of the class.
 """
-from inspect import signature as sig_func
+from inspect import Parameter, Signature, signature as sig_func
 from typing import (
     Any,
     Callable,
@@ -87,7 +87,21 @@ class Intersection(Any):
                 except:
                     is_callable = False
                 if is_callable:
-                    raise NotImplementedError
+                    params, return_type = get_args(i)
+                    return Signature(
+                        parameters=[
+                            Parameter(name="self", kind=Parameter.POSITIONAL_ONLY)
+                        ]
+                        + [
+                            Parameter(
+                                name="param" + str(x),
+                                kind=Parameter.POSITIONAL_ONLY,
+                                annotation=i,
+                            )
+                            for x, i in enumerate(params)
+                        ],
+                        return_annotation=return_type,
+                    )
                 else:
                     method = getattr(i, name)
                     if callable(method) and name not in excluded_methods:
