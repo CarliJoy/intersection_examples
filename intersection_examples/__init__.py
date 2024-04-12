@@ -40,15 +40,12 @@ def get_possible_methods(method: Callable) -> Sequence[Callable]:
         return overloads
 
 
-def has_origin(cls: object) -> bool:
+def is_callable(cls: object) -> bool:
     try:
-        orig = get_origin(cls)
-        if orig is not None:
-            return True
-        else:
-            return False
+        out = issubclass(cast(Any, get_origin(cls)), Callable)
     except:
-        return False
+        out = False
+    return out
 
 
 def is_non_structural(cls: object) -> bool:
@@ -65,7 +62,7 @@ def is_non_structural(cls: object) -> bool:
         cls == Any
         or is_protocol(cls)  # type:ignore
         or is_typeddict(cls)
-        or has_origin(cls)
+        or is_callable(cls)
     ):
         return False
     return True
@@ -119,11 +116,7 @@ class Intersection(Any):
             elif hasattr(i, "__annotations__") and name in i.__annotations__:
                 return i.__annotations__[name]
             elif hasattr(i, name):
-                try:
-                    is_callable = issubclass(cast(Any, get_origin(i)), Callable)
-                except:
-                    is_callable = False
-                if is_callable:
+                if is_callable(i):
                     params, return_type = get_args(i)
                     return Signature(
                         parameters=[
