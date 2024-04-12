@@ -90,7 +90,7 @@ class Intersection(Any):
 
     def __repr__(self) -> str:
         attrs = list(repr(i) for i in self.__intersects__)
-        return " & ".join(attrs)
+        return "Intersection[" + ", ".join(attrs) + "]"
 
     def __getattribute__(self, name: str):
         """
