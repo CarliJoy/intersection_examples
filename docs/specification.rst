@@ -21,7 +21,7 @@ This PEP proposes the addition of intersection types.
 They are denoted as ``Intersection[A, B]`` and must:
 
 - express all attributes and methods of the first type (here A);
-- express all attributes and methods of each other type, unless superceded by a preceding type; and
+- express all attributes and methods of each other type, unless superseded by a preceding type; and
 - inherit from all specified types, in this mro ordering, unless the type is structural;
 
 Intersection types are a complementary concept to union types introduced
@@ -81,18 +81,19 @@ with instances of ``A``, ``B`` or ``D``.
 Motivation
 ==========
 
-This allows
+This allows:
 
 - the typing of class decorators which make predictable additions in capability
   to types. (ie. ``functools.total_ordering``)
 - improved duck-typing (Mixing of protocols without redeclarations)
 - improved use of TypedDict
+- simplified method for adding positional only ``__call__`` protocols using ``Callable``
 
 Class Decorators
 ----------------
 
 
-Class decorators often add behaviour to existing classes, but currently you can
+Class decorators often add behavior to existing classes, but currently you can
 only express the type of the produced class in specific cases. In the example
 below the decorator takes a class and gives it an additional method ``foo``:
 
@@ -191,6 +192,38 @@ typed methods in a Protocol, and combine them with a non-protocol class:
 For a class to be valid as the intersection, here it must inherit from Other,
 and implement all the methods of ProtoClass.
 
+Callable equivalence to Protocol
+--------------------------------
+
+Now ``Callable`` can be combined with existing classes to easily define ``__call__``
+methods, because it's equivalent to a positional only protocol:
+
+::
+
+    from typing import Callable, Protocol
+
+    t1 = Callable[[int], str]
+
+    class t2(Protocol):
+        def __call__(self, param0: int, /) -> str:
+            ...
+
+    # t1 and t2 are equivalent, therefore
+
+    class X(Protocol):
+        def foo(self) -> int:
+            ...
+
+    class Y:
+        def foo(self) -> int:
+            return 1
+
+        def __call__(self, param0: int, /) -> str:
+            ...
+
+    x: Intersection[Callable[[int], str], X] = Y() # is valid
+
+
 
 Specification
 =============
@@ -203,8 +236,16 @@ as follows:
 They are denoted as ``Intersection[A, B]`` and must:
 
 1. express all attributes and methods of the first type (here A);
-2. express all attributes and methods of each other type, unless superceded by a preceding type; and
+2. express all attributes and methods of each other type, unless superseded by a preceding type; and
 3. inherit from all specified types, in this mro ordering, unless the type is structural;
+
+A "structural type" is considered to be one which cannot be mixed via inheritance to a regular class.
+(See PEP 544 for details)
+Some of the structural types are:
+- ``typing.TypedDict``
+- ``typing.Protocol``
+- ``typing.Any``
+- ``typing.Callable``
 
 ``TypeVarTuple`` can be used in an intersection like so: ``Intersection[*Ts]``
 
@@ -231,7 +272,7 @@ Rationale
 
 The intersection discussion was long and complex, with many edge cases explored
 to determine the feasibility of an intersection. In this section I will
-summarise why certain design decisions were made.
+summarize why certain design decisions were made.
 
 Inheritance
 -----------
@@ -264,7 +305,7 @@ checker need only find the first matching type.
 
 When we originally considered the unordered version, there were a number of issues
 that appeared, many of which proved insurmountable. It was impossible to reach a
-consensus because it meant that in certain scenerios there were multiple interpretations
+consensus because it meant that in certain scenarios there were multiple interpretations
 for the type of each attribute. Some issues include:
 
 - Combining intersections with ``Any``
@@ -275,13 +316,54 @@ In the current design these issues disappear, because the way that the type beha
 on the ordering. In ``Intersection[X, Any]`` if an attribute is present on X, it receives
 type from ``X``, and otherwise it has type ``Any``. For ``Intersection[Any, X]`` all
 attributes have type ``Any``, because ``Any`` has priority. Banning ``Any`` was found to be
-impossible, as it might arise inavoidable in certain scenarios such as use of ``TypeVar``.
+impossible, as it might arise unavoidably in certain scenarios such as use of ``TypeVar``.
 
 
 Backward Compatibility
 =======================
 
-None
+Any subclassing rules
+---------------------
+
+An [issue]_ that was raised was that the way subclassing an ``Any`` class works is currently
+inconsistent, and that this was a blocker to intersections. By considering ``Any`` a structural
+type, this resolves this issue.
+
+We no longer need to consider the placing of Any in the mro, as it is not a requirement to subclass it
+if it appears.
+
+In terms of the inconsistency as to the attributes available when Any is inherited from, we can ignore
+this behavior as far as this PEP is concerned. The intersection as defined simply asks "What attributes
+are available on each part of the intersection?". Take the example below:
+
+::
+
+    from untyped import Unknown  # standing for an untyped library
+
+    class SerialMixin:
+        def serialize(self) -> bytes:
+            ...
+
+    class AmbiguousExample(Any, SerialMixin):
+        pass
+
+    def unspecified(a: AmbiguousExample):
+        a.serialize()  # interpretation dependant
+        a.serialize(byte_order="le")  # interpretation dependant
+        a.serialize(web_safe_str=True)  # interpretation dependant
+        a.bar()  # Any
+
+
+The fact that the behavior of ``AmbiguousExample`` may no longer match the behavior of
+``Intersection[Any, SerialMixin]`` is ok because these can be considered distinct types. Using ``Any``
+as a structural type in an ``Intersection``, is not the same as inheriting from ``Any``.
+``Intersection[Any, SerialMixin]`` has all attributes of ``Any``, as ``Any`` comes first in the intersection.
+``AmbiguousExample`` on the other hand may have more specific types for the methods, but will always be a
+subtype of Any.
+
+Another question would be if ``AmbiguousExample`` satisfies ``Intersection[SerialMixin, Any]``. To satisfy
+this, ``AmbiguousExample`` would need have the method serialize that returns bytes. But the question of *if it has*
+this method is ultimately determined by a specification outside of intersection, and therefore out of scope.
 
 Security Implications
 =====================
@@ -303,6 +385,11 @@ may appear in the final image:
 
 .. image:: stickmen.jpg
 
+This is exactly the way an intersection works. The "features" here are really like methods and
+attributes, and stack on top of each other. If the attributes are not shared between classes in
+the intersection, these appear in the resulting type, and if they appear in multiple the type
+with highest priority takes position.
+
 When considering the inheritance aspect, for users familiar with the mro this should be
 quite straightforward: If a type *can* appear in an mro of a concrete class, then it should
 appear in the order specified.
@@ -310,10 +397,13 @@ appear in the order specified.
 Reference Implementation
 ========================
 
-The reference implementation for this PEP is a "typing simulator". It doesn't exactly
+The reference implementation for this PEP is a [typing_simulator]_. It doesn't exactly
 replicate the way this will work in practice, but allows to a user to request the
-type of a method or attribute in the result of an intersection. The hope is that
-while this isn't perfect, it should answer questions about the type of the output in
+type of a method or attribute in the result of an intersection. It also allows users via
+``must_subclass`` to request the classes that the resulting intersection must be a
+subclass of.
+
+The hope is that this should answer questions about the type of the output in
 particular intersection combinations.
 
 Rejected Ideas
@@ -343,11 +433,32 @@ has been excluded.
 It also allows for the possibility of some future unordered intersection to use
 this syntax, even if this is a very unlikely scenario.
 
+Fully Unordered Intersection
+----------------------------
+
+This was considered as the only option for quite a long time (given the duality
+with union). This has been discussed already in the "Ordering" section, but this
+was eliminated because ultimately there too many possible interpretations when
+objects overlap. The PEP in its current form now produces a result with only
+one possible interpretation, and the rules it conforms to are extremely simple.
+
+While a fully unordered intersection may be theoretically possible, in practice
+it was found there were too many hurdles to create a consistent interpretation
+that all members of the community could agree on, and special casing became
+much more prevalent. A lot of the discussion in this [repo]_ shows this has been
+thoroughly considered:.
+
 Footnotes
 =========
 
-None
+.. [issue]
+    https://discuss.python.org/t/take-2-rules-for-subclassing-any/47981/23
 
+.. [typing_simulator]
+    https://github.com/CarliJoy/intersection_examples/blob/main/examples/basic.py
+
+.. [repo]
+    https://github.com/CarliJoy/intersection_examples/issues/1
 
 Copyright
 =========
